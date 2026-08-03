@@ -1,0 +1,20 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Sembunyikan daftar isi folder untuk keamanan
+    Options -Indexes
+
+    # Cegah akses ke berkas/folder tersembunyi seperti .git atau .env
+    RewriteRule (^\/|\/)\.(git|env|htaccess) - [F]
+
+    # Abaikan URL yang merujuk langsung ke berkas atau direktori fisik (seperti assets, uploads, css, js, gambar)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Arahkan seluruh request URL ke index.php
+    RewriteRule ^(.*)$ index.php/$1 [L,QSA]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    ErrorDocument 404 /index.php
+</IfModule>

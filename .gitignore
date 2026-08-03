@@ -1,0 +1,64 @@
+# =====================================================================
+# SIPO-MEDIASI — Production .gitignore
+# =====================================================================
+
+# 1. Dokumen Perancangan & Berkas Internal Agent/AI (Development Docs)
+# ---------------------------------------------------------------------
+docs/
+implementation_plan.md
+task.md
+walkthrough.md
+*.tmp
+*.log
+
+# 2. Uploaded User Content (Media & Dokumen Yang Diunggah User)
+# ---------------------------------------------------------------------
+uploads/*
+!uploads/.htaccess
+!uploads/index.html
+
+# 3. CodeIgniter Logs & Cache
+# ---------------------------------------------------------------------
+application/cache/*
+!application/cache/index.html
+
+application/logs/*
+!application/logs/index.html
+
+!application/*/.htaccess
+
+# 4. Cadangan Database & Script Temporary (DB Backups & Scratch Scripts)
+# ---------------------------------------------------------------------
+*.sql.zip
+backup_*.sql
+scratch/
+migrate_*.php
+
+# 5. Dependency Managers & Vendor Folders
+# ---------------------------------------------------------------------
+/vendor/
+node_modules/
+composer.lock
+
+# 6. IDE, Code Editor & OS System Files
+# ---------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# VS Code / PhpStorm / Eclipse / NetBeans / Sublime Text
+.vscode/
+.idea/
+/nbproject/
+*.sublime-workspace
+*.sublime-project
+*.stTheme.cache
+*.tmlanguage.cache
+*.tmPreferences.cache
+
+# 7. Environment Credentials & Configuration Local
+# ---------------------------------------------------------------------
+.env
+.env.local
+.env.production
