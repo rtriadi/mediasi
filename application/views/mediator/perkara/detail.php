@@ -1,3 +1,14 @@
+<?php
+$has_unfinished = false;
+if (!empty($jadwal)) {
+    foreach ($jadwal as $sj) {
+        if (($sj->status_sesi ?? 'terjadwal') === 'terjadwal') {
+            $has_unfinished = true;
+            break;
+        }
+    }
+}
+?>
 <div class="max-w-5xl mx-auto">
     <!-- Breadcrumb -->
     <nav class="flex items-center gap-2 text-sm text-gray-500 mb-6">
@@ -21,14 +32,20 @@
                     <span>Cetak Lembar Mediasi</span>
                 </a>
                 <?php if ($perkara->status !== 'selesai'): ?>
-                <a href="<?= site_url("mediator/jadwal/tambah/{$perkara->id}") ?>"
-                    class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors shadow-sm">
-                    + Buat Jadwal Mediasi
-                </a>
-                <a href="<?= site_url("mediator/hasil/input/{$perkara->id}") ?>"
-                    class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors shadow-sm">
-                    ✓ Input Hasil Mediasi
-                </a>
+                    <?php if ($has_unfinished): ?>
+                    <span class="inline-flex items-center gap-1.5 text-xs text-amber-800 bg-amber-50 px-3.5 py-2 rounded-lg border border-amber-200 font-semibold shadow-sm" title="Harap selesaikan presensi sesi mediasi aktif terlebih dahulu">
+                        ⚠️ Selesaikan Presensi Sesi Aktif Terlebih Dahulu
+                    </span>
+                    <?php else: ?>
+                    <a href="<?= site_url("mediator/jadwal/tambah/{$perkara->id}") ?>"
+                        class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors shadow-sm">
+                        + Buat Jadwal Mediasi
+                    </a>
+                    <a href="<?= site_url("mediator/hasil/input/{$perkara->id}") ?>"
+                        class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors shadow-sm">
+                        ✓ Input Hasil Mediasi
+                    </a>
+                    <?php endif; ?>
                 <?php else: ?>
                 <span class="px-3 py-1 bg-green-100 text-green-800 font-semibold text-sm rounded-full">Mediasi Selesai</span>
                 <?php endif; ?>

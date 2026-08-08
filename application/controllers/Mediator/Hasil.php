@@ -38,6 +38,15 @@ class Hasil extends MY_Controller {
             return;
         }
 
+        // Cek jika masih ada sesi mediasi aktif yang belum diselesaikan (presensi belum diisi)
+        $this->load->model('M_jadwal');
+        $unfinished = $this->M_jadwal->get_unfinished_session($perkara_id);
+        if ($unfinished) {
+            $this->session->set_flashdata('error', 'Sesi mediasi aktif (tanggal ' . date('d/m/Y', strtotime($unfinished->tgl_mediasi)) . ') belum diselesaikan. Harap catat presensi & selesaikan sesi terlebih dahulu sebelum menginput Hasil Mediasi.');
+            redirect("mediator/perkara_saya/detail/{$perkara_id}");
+            return;
+        }
+
         if ($this->input->post()) {
             $this->form_validation->set_rules('hasil', 'Hasil Mediasi', 'required|in_list[berhasil,berhasil_sebagian,tidak_berhasil]');
 
