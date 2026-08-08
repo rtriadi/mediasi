@@ -65,8 +65,8 @@
                 <span>Para Pihak Berperkara</span>
             </h3>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <?php foreach (['penggugat' => 'Penggugat / Pemohon', 'tergugat' => 'Tergugat / Termohon'] as $k => $label): ?>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <?php foreach (['penggugat' => 'Penggugat / Pemohon', 'tergugat' => 'Tergugat / Termohon', 'turut_tergugat' => 'Turut Tergugat'] as $k => $label): ?>
                     <?php
                     $list = array_filter($pihak, function($p) use ($k) { return $p->jenis === $k; });
                     if (!empty($list)):
@@ -76,7 +76,7 @@
                         <ul class="space-y-2">
                             <?php foreach ($list as $p): ?>
                             <li class="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                                <span class="w-2 h-2 rounded-full <?= $k === 'penggugat' ? 'bg-blue-600' : 'bg-amber-500' ?>"></span>
+                                <span class="w-2 h-2 rounded-full <?= $k === 'penggugat' ? 'bg-blue-600' : ($k === 'tergugat' ? 'bg-amber-500' : 'bg-purple-500') ?>"></span>
                                 <span><?= htmlspecialchars($p->nama) ?></span>
                                 <?php if ($p->kuasa_hukum): ?>
                                 <span class="text-xs font-normal text-slate-500">(Kuasa: <?= htmlspecialchars($p->kuasa_hukum) ?>)</span>
