@@ -1,4 +1,4 @@
-﻿<!-- Header -->
+<!-- Header -->
 <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
     <div>
         <h2 class="text-2xl font-extrabold font-heading text-slate-900 tracking-tight">Jadwal Mediasi Saya</h2>
@@ -122,8 +122,16 @@
                         <?php endif; ?>
                     </td>
                     <td class="px-4 py-3.5 text-right">
-                        <?php if ($is_aktif): ?>
+                        <?php if ($status_sesi === 'terjadwal'): ?>
                         <div class="flex items-center justify-end gap-1.5">
+                            <!-- Presensi & Selesai -->
+                            <a href="<?= site_url("mediator/jadwal/selesai/{$j->id}") ?>"
+                                class="inline-flex items-center gap-1 text-xs text-white bg-emerald-600 hover:bg-emerald-700 font-bold px-2.5 py-1 rounded-lg transition-colors shadow-sm"
+                                title="Presensi Kehadiran & Selesaikan Sesi">
+                                <i class="fa-solid fa-circle-check"></i>
+                                <span class="hidden sm:inline">Presensi</span>
+                            </a>
+
                             <!-- Edit Jadwal -->
                             <a href="<?= site_url("mediator/jadwal/edit/{$j->id}") ?>"
                                 class="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-bold px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors border border-blue-200"
@@ -148,17 +156,11 @@
                                 <i class="fa-solid fa-xmark"></i>
                                 <span class="hidden sm:inline">Batal</span>
                             </button>
-
-                            <!-- Detail Perkara -->
-                            <a href="<?= site_url("mediator/perkara_saya/detail/{$j->perkara_id}") ?>"
-                                class="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-bold px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors"
-                                title="Detail Perkara">
-                                <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                            </a>
                         </div>
                         <?php else: ?>
                             <a href="<?= site_url("mediator/perkara_saya/detail/{$j->perkara_id}") ?>"
-                                class="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 font-bold px-2 py-1 rounded-lg hover:bg-slate-50 transition-colors">
+                                class="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-bold px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors border border-blue-200">
+                                <span>Detail Perkara</span>
                                 <i class="fa-solid fa-chevron-right text-[10px]"></i>
                             </a>
                         <?php endif; ?>

@@ -219,9 +219,9 @@ class Jadwal extends MY_Controller {
             show_error('Akses ditolak.', 403);
         }
 
-        // Jika sudah batal atau dijadwal ulang
-        if (in_array($sesi->status_sesi, ['batal', 'dijadwal_ulang'])) {
-            $this->session->set_flashdata('error', 'Sesi ini tidak bisa direschedule (sudah batal atau sudah dijadwal ulang).');
+        // Sesi yang bisa direschedule hanya berstatus 'terjadwal'
+        if ($sesi->status_sesi !== 'terjadwal') {
+            $this->session->set_flashdata('error', 'Hanya sesi berstatus Terjadwal yang dapat di-reschedule.');
             redirect("mediator/perkara_saya/detail/{$sesi->perkara_id}");
             return;
         }
@@ -307,6 +307,12 @@ class Jadwal extends MY_Controller {
             show_error('Akses ditolak.', 403);
         }
 
+        if ($sesi->status_sesi !== 'terjadwal') {
+            $this->session->set_flashdata('error', 'Hanya sesi berstatus Terjadwal yang dapat dibatalkan.');
+            redirect("mediator/perkara_saya/detail/{$sesi->perkara_id}");
+            return;
+        }
+
         $alasan = $this->input->post('alasan', true) ?: 'Dibatalkan oleh mediator.';
         $this->M_jadwal->batal($sesi_id, $alasan);
 
@@ -337,6 +343,12 @@ class Jadwal extends MY_Controller {
 
         if (!in_array('admin', $this->session->userdata('roles') ?: [$this->session->userdata('role')]) && $sesi->mediator_id != $mediator_id) {
             show_error('Akses ditolak.', 403);
+        }
+
+        if ($sesi->status_sesi !== 'terjadwal') {
+            $this->session->set_flashdata('error', 'Sesi yang sudah selesai, dibatalkan, atau dijadwal ulang tidak dapat diedit.');
+            redirect("mediator/perkara_saya/detail/{$sesi->perkara_id}");
+            return;
         }
 
         if ($this->input->post()) {
