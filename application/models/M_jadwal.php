@@ -41,7 +41,11 @@ class M_jadwal extends CI_Model {
         
         $this->_apply_filter($filter);
 
-        return $this->db->order_by('s.tgl_mediasi', 'ASC')->limit($limit, $offset)->get()->result();
+        $jadwals = $this->db->order_by('s.tgl_mediasi', 'ASC')->limit($limit, $offset)->get()->result();
+        foreach ($jadwals as &$j) {
+            $j->kehadiran = $this->get_kehadiran($j->id);
+        }
+        return $jadwals;
     }
 
     public function count_by_mediator($mediator_id, $filter = []) {

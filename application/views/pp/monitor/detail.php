@@ -206,6 +206,10 @@
                                 </div>
                                 <?php endforeach; ?>
                             </div>
+                            <?php elseif ($st === 'selesai'): ?>
+                            <div class="mt-2 p-2 bg-gray-100/60 rounded-lg text-[11px] text-gray-500 italic">
+                                📋 Presensi Kehadiran Pihak: (Presensi belum terdata secara rinci pada sesi ini)
+                            </div>
                             <?php endif; ?>
                         </div>
                     </div>
