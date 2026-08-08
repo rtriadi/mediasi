@@ -34,11 +34,10 @@ class Dashboard extends MY_Controller {
 
         $mediators = $this->M_mediator->get_aktif();
 
-        // Data Analitik untuk 3 grafik baru
-        $tahun_analitik = $filter['tahun'];
-        $trend_bulanan   = $this->M_statistik->trend_bulanan($tahun_analitik);
-        $kinerja_mediator= $this->M_statistik->kinerja_mediator($tahun_analitik);
-        $distribusi_jenis= $this->M_statistik->distribusi_jenis($tahun_analitik);
+        // Data Analitik untuk 3 grafik baru (disaring berdasarkan filter yang dipilih)
+        $trend_bulanan    = $this->M_statistik->trend_bulanan($filter);
+        $kinerja_mediator = $this->M_statistik->kinerja_mediator($filter);
+        $distribusi_jenis = $this->M_statistik->distribusi_jenis($filter);
 
         $this->render('pimpinan/dashboard/index', [
             'title'             => 'Dashboard & Laporan Statistik Mediasi',

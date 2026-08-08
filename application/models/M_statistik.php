@@ -67,20 +67,17 @@ class M_statistik extends CI_Model {
      * Tren mediasi bulanan — 12 bulan terakhir (untuk line/bar chart).
      * Returns array of: { bulan, label, berhasil, berhasil_sebagian, tidak_berhasil, total }
      */
-    public function trend_bulanan($tahun = null) {
-        $tahun = $tahun ?: date('Y');
-        $sql = "
-            SELECT
-                MONTH(h.tgl_hasil)  AS bulan,
-                h.hasil,
-                COUNT(*)             AS total
-            FROM hasil_mediasi h
-            JOIN perkara p ON p.id = h.perkara_id
-            WHERE YEAR(h.tgl_hasil) = ?
-            GROUP BY MONTH(h.tgl_hasil), h.hasil
-            ORDER BY bulan ASC
-        ";
-        $rows = $this->db->query($sql, [$tahun])->result();
+    public function trend_bulanan($filter = []) {
+        if (!is_array($filter)) {
+            $filter = ['tahun' => $filter];
+        }
+        $this->db->select('MONTH(h.tgl_hasil) AS bulan, h.hasil, COUNT(*) AS total');
+        $this->db->from('hasil_mediasi h');
+        $this->db->join('perkara p', 'p.id = h.perkara_id');
+        $this->_apply_filter($filter);
+        $this->db->group_by(['MONTH(h.tgl_hasil)', 'h.hasil']);
+        $this->db->order_by('bulan', 'ASC');
+        $rows = $this->db->get()->result();
 
         $bln_labels = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'];
         $data = [];
@@ -101,23 +98,27 @@ class M_statistik extends CI_Model {
      * Kinerja per-mediator — tingkat keberhasilan.
      * Returns array of: { mediator_id, nama, berhasil, berhasil_sebagian, tidak_berhasil, total, pct_berhasil }
      */
-    public function kinerja_mediator($tahun = null) {
-        $tahun = $tahun ?: date('Y');
-        $sql = "
-            SELECT
-                m.id AS mediator_id,
-                m.nama,
-                SUM(IF(h.hasil = 'berhasil', 1, 0))          AS berhasil,
-                SUM(IF(h.hasil = 'berhasil_sebagian', 1, 0)) AS berhasil_sebagian,
-                SUM(IF(h.hasil = 'tidak_berhasil', 1, 0))    AS tidak_berhasil,
-                COUNT(*)                                       AS total
-            FROM hasil_mediasi h
-            JOIN mediators m ON m.id = h.mediator_id
-            WHERE YEAR(h.tgl_hasil) = ?
-            GROUP BY m.id, m.nama
-            ORDER BY berhasil DESC, total DESC
-        ";
-        $rows = $this->db->query($sql, [$tahun])->result();
+    public function kinerja_mediator($filter = []) {
+        if (!is_array($filter)) {
+            $filter = ['tahun' => $filter];
+        }
+        $this->db->select("
+            m.id AS mediator_id,
+            m.nama,
+            SUM(IF(h.hasil = 'berhasil', 1, 0))          AS berhasil,
+            SUM(IF(h.hasil = 'berhasil_sebagian', 1, 0)) AS berhasil_sebagian,
+            SUM(IF(h.hasil = 'tidak_berhasil', 1, 0))    AS tidak_berhasil,
+            COUNT(*)                                       AS total
+        ", false);
+        $this->db->from('hasil_mediasi h');
+        $this->db->join('mediators m', 'm.id = h.mediator_id');
+        $this->db->join('perkara p', 'p.id = h.perkara_id', 'left');
+        $this->_apply_filter($filter);
+        $this->db->group_by(['m.id', 'm.nama']);
+        $this->db->order_by('berhasil', 'DESC');
+        $this->db->order_by('total', 'DESC');
+        $rows = $this->db->get()->result();
+
         foreach ($rows as &$r) {
             $r->pct_berhasil = $r->total > 0 ? round(($r->berhasil / $r->total) * 100, 1) : 0;
         }
@@ -128,20 +129,19 @@ class M_statistik extends CI_Model {
      * Distribusi jenis perkara — untuk pie/doughnut chart.
      * Returns array of: { jenis_perkara, total, pct }
      */
-    public function distribusi_jenis($tahun = null) {
-        $tahun = $tahun ?: date('Y');
-        $sql = "
-            SELECT
-                jp.nama AS jenis_perkara,
-                COUNT(*) AS total
-            FROM hasil_mediasi h
-            JOIN perkara p ON p.id = h.perkara_id
-            JOIN jenis_perkara jp ON jp.id = p.jenis_perkara_id
-            WHERE YEAR(h.tgl_hasil) = ?
-            GROUP BY jp.id, jp.nama
-            ORDER BY total DESC
-        ";
-        $rows = $this->db->query($sql, [$tahun])->result();
+    public function distribusi_jenis($filter = []) {
+        if (!is_array($filter)) {
+            $filter = ['tahun' => $filter];
+        }
+        $this->db->select('jp.nama AS jenis_perkara, COUNT(*) AS total');
+        $this->db->from('hasil_mediasi h');
+        $this->db->join('perkara p', 'p.id = h.perkara_id');
+        $this->db->join('jenis_perkara jp', 'jp.id = p.jenis_perkara_id');
+        $this->_apply_filter($filter);
+        $this->db->group_by(['jp.id', 'jp.nama']);
+        $this->db->order_by('total', 'DESC');
+        $rows = $this->db->get()->result();
+
         $grand_total = array_sum(array_column((array)$rows, 'total'));
         foreach ($rows as &$r) {
             $r->pct = $grand_total > 0 ? round(($r->total / $grand_total) * 100, 1) : 0;
