@@ -289,12 +289,27 @@ class Perkara extends MY_Controller {
                     }
                 }
 
-                // Delete only pihak rows that were explicitly removed by PP in the edit form
+                // Delete only pihak rows that were explicitly removed by PP in the edit form, provided they have no presensi logs
                 $this->db->where('perkara_id', $id);
                 if (!empty($submitted_ids)) {
                     $this->db->where_not_in('id', $submitted_ids);
                 }
-                $this->db->delete('perkara_pihak');
+                $omitted_pihak = $this->db->get('perkara_pihak')->result();
+
+                if (!empty($omitted_pihak)) {
+                    $omitted_ids = array_column($omitted_pihak, 'id');
+                    $this->db->where_in('pihak_id', $omitted_ids);
+                    $has_presensi = $this->db->count_all_results('sesi_kehadiran');
+
+                    if ($has_presensi > 0) {
+                        $this->session->set_flashdata('error', 'Gagal menyimpan: Salah satu pihak yang Anda hapus dari form sudah memiliki catatan presensi kehadiran sesi mediasi.');
+                        redirect("pp/perkara/edit/{$id}");
+                        return;
+                    }
+
+                    // Aman dihapus karena belum pernah ada presensi kehadiran untuk pihak tersebut
+                    $this->db->where_in('id', $omitted_ids)->delete('perkara_pihak');
+                }
 
                 $this->session->set_flashdata('success', 'Data perkara dan pihak berhasil diperbarui.');
                 redirect("pp/monitor/detail/{$id}");

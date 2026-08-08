@@ -117,9 +117,9 @@ class Jadwal extends MY_Controller {
             show_error('Akses ditolak.', 403);
         }
 
-        // Validasi jika hasil sudah diinput
-        if ($this->M_hasil->is_exist($perkara_id)) {
-            $this->session->set_flashdata('error', 'Tidak dapat menambah jadwal karena hasil mediasi sudah diinput.');
+        // Validasi jika hasil sudah diinput atau perkara sudah selesai
+        if ($perkara->status === 'selesai' || $this->M_hasil->is_exist($perkara_id)) {
+            $this->session->set_flashdata('error', 'Tidak dapat menambah jadwal karena perkara ini sudah selesai / hasil mediasi sudah diinput.');
             redirect("mediator/perkara_saya/detail/{$perkara_id}");
             return;
         }
@@ -144,6 +144,13 @@ class Jadwal extends MY_Controller {
                 $jam_mulai   = $this->input->post('jam_mulai');
                 $jam_selesai = $this->input->post('jam_selesai');
                 $ruangan_id  = $this->input->post('ruangan_id') ?: null;
+
+                // Validasi tanggal mediasi tidak boleh melebihi batas akhir mediasi
+                if (!empty($perkara->tgl_batas_mediasi) && strtotime($tgl) > strtotime($perkara->tgl_batas_mediasi)) {
+                    $this->session->set_flashdata('error', 'Tanggal mediasi (' . date('d/m/Y', strtotime($tgl)) . ') melebihi Batas Akhir Mediasi (' . date('d/m/Y', strtotime($perkara->tgl_batas_mediasi)) . '). Silakan tentukan tanggal sebelum batas akhir.');
+                    redirect("mediator/jadwal/tambah/{$perkara_id}");
+                    return;
+                }
 
                 // Validasi jam_selesai > jam_mulai
                 if ($jam_selesai <= $jam_mulai) {
@@ -219,6 +226,13 @@ class Jadwal extends MY_Controller {
             show_error('Akses ditolak.', 403);
         }
 
+        // Validasi perkara selesai
+        if ($perkara->status === 'selesai' || $this->M_hasil->is_exist($sesi->perkara_id)) {
+            $this->session->set_flashdata('error', 'Tidak dapat mengubah jadwal karena perkara ini sudah selesai.');
+            redirect("mediator/perkara_saya/detail/{$sesi->perkara_id}");
+            return;
+        }
+
         // Sesi yang bisa direschedule hanya berstatus 'terjadwal'
         if ($sesi->status_sesi !== 'terjadwal') {
             $this->session->set_flashdata('error', 'Hanya sesi berstatus Terjadwal yang dapat di-reschedule.');
@@ -240,6 +254,11 @@ class Jadwal extends MY_Controller {
                 $jam_selesai_baru = $this->input->post('jam_selesai_baru');
                 $ruangan_id_baru  = $this->input->post('ruangan_id_baru') ?: null;
                 $alasan           = $this->input->post('alasan', true);
+
+                if (!empty($perkara->tgl_batas_mediasi) && strtotime($tgl_baru) > strtotime($perkara->tgl_batas_mediasi)) {
+                    $this->session->set_flashdata('error', 'Tanggal mediasi baru (' . date('d/m/Y', strtotime($tgl_baru)) . ') melebihi Batas Akhir Mediasi (' . date('d/m/Y', strtotime($perkara->tgl_batas_mediasi)) . ').');
+                    redirect("mediator/jadwal/reschedule/{$sesi_id}"); return;
+                }
 
                 if ($jam_selesai_baru <= $jam_mulai_baru) {
                     $this->session->set_flashdata('error', 'Jam selesai harus lebih akhir daripada jam mulai.');
@@ -307,6 +326,13 @@ class Jadwal extends MY_Controller {
             show_error('Akses ditolak.', 403);
         }
 
+        $perkara = $this->M_perkara->get_by_id($sesi->perkara_id);
+        if ($perkara && ($perkara->status === 'selesai' || $this->M_hasil->is_exist($sesi->perkara_id))) {
+            $this->session->set_flashdata('error', 'Tidak dapat membatalkan sesi karena perkara ini sudah selesai.');
+            redirect("mediator/perkara_saya/detail/{$sesi->perkara_id}");
+            return;
+        }
+
         if ($sesi->status_sesi !== 'terjadwal') {
             $this->session->set_flashdata('error', 'Hanya sesi berstatus Terjadwal yang dapat dibatalkan.');
             redirect("mediator/perkara_saya/detail/{$sesi->perkara_id}");
@@ -345,6 +371,12 @@ class Jadwal extends MY_Controller {
             show_error('Akses ditolak.', 403);
         }
 
+        if ($perkara->status === 'selesai' || $this->M_hasil->is_exist($sesi->perkara_id)) {
+            $this->session->set_flashdata('error', 'Tidak dapat mengubah sesi karena perkara ini sudah selesai.');
+            redirect("mediator/perkara_saya/detail/{$sesi->perkara_id}");
+            return;
+        }
+
         if ($sesi->status_sesi !== 'terjadwal') {
             $this->session->set_flashdata('error', 'Sesi yang sudah selesai, dibatalkan, atau dijadwal ulang tidak dapat diedit.');
             redirect("mediator/perkara_saya/detail/{$sesi->perkara_id}");
@@ -363,6 +395,12 @@ class Jadwal extends MY_Controller {
                 $jam_mulai   = $this->input->post('jam_mulai');
                 $jam_selesai = $this->input->post('jam_selesai');
                 $ruangan_id  = $this->input->post('ruangan_id') ?: null;
+
+                if (!empty($perkara->tgl_batas_mediasi) && strtotime($tgl) > strtotime($perkara->tgl_batas_mediasi)) {
+                    $this->session->set_flashdata('error', 'Tanggal mediasi (' . date('d/m/Y', strtotime($tgl)) . ') melebihi Batas Akhir Mediasi (' . date('d/m/Y', strtotime($perkara->tgl_batas_mediasi)) . ').');
+                    redirect("mediator/jadwal/edit/{$sesi_id}");
+                    return;
+                }
 
                 if ($jam_selesai <= $jam_mulai) {
                     $this->session->set_flashdata('error', 'Jam selesai harus lebih akhir daripada jam mulai.');
@@ -451,14 +489,24 @@ class Jadwal extends MY_Controller {
                 $raw_kehadiran = $this->input->post('kehadiran') ?: [];
 
                 $kehadiran_batch = [];
+                $unselected_pihak = [];
                 foreach ($pihak as $p) {
-                    $st = $raw_kehadiran[$p->id]['status'] ?? 'hadir';
+                    $st = $raw_kehadiran[$p->id]['status'] ?? null;
+                    if (!in_array($st, ['hadir', 'absen', 'kuasa'])) {
+                        $unselected_pihak[] = $p->nama;
+                    }
                     $ct = $raw_kehadiran[$p->id]['catatan'] ?? null;
                     $kehadiran_batch[] = [
                         'pihak_id'         => $p->id,
-                        'status_kehadiran' => $st,
+                        'status_kehadiran' => $st ?: 'hadir',
                         'catatan'          => trim($ct) ?: null,
                     ];
+                }
+
+                if (!empty($unselected_pihak)) {
+                    $this->session->set_flashdata('error', 'Harap pilih status presensi (Hadir/Absen/Kuasa) untuk: ' . implode(', ', $unselected_pihak));
+                    redirect("mediator/jadwal/selesai/{$sesi_id}");
+                    return;
                 }
 
                 $this->M_jadwal->selesaikan_sesi($sesi_id, $catatan_sesi, $kehadiran_batch);
