@@ -243,6 +243,11 @@ class Perkara extends MY_Controller {
                         'assigned_by' => $this->session->userdata('user_id'),
                     ]);
 
+                    // Otomatis alihkan (takeover) semua sesi yang masih 'terjadwal' ke mediator baru
+                    $this->db->where('perkara_id', $id)
+                             ->where('status_sesi', 'terjadwal')
+                             ->update('sesi_mediasi', ['mediator_id' => $new_mediator_id]);
+
                     // Kirim notifikasi ke mediator LAMA (pemberhentian penugasan)
                     $this->emailgateway->kirim_penggantian_mediator($id, $old_mediator_id);
                     $this->wagateway->kirim_penggantian_mediator($id, $old_mediator_id);

@@ -51,6 +51,7 @@
 
 ### 4. 🔄 Penggantian Mediator & Jejak Audit (Audit Trail):
 - **Tabel Log Riwayat Penugasan (`perkara_mediator_log`):** Mencatat secara otomatis setiap riwayat penetapan dan penggantian mediator.
+- **Automatic Active Session Takeover (Ide 1):** Sesi mediasi berstatus `terjadwal` yang dibuat mediator lama otomatis dialihkan kepemilikannya ke mediator baru saat terjadi penggantian mediator oleh PP, sehingga mediator baru dapat langsung melanjutkan dan mencatat presensi kehadiran.
 - **Dual Notification:** Mediator lama otomatis menerima notifikasi pencabutan penugasan via WA/Email saat diganti, dan mediator baru menerima notifikasi penugasan.
 - **Timeline Riwayat Mediator:** Menampilkan riwayat lengkap mediator (aktif/digantikan) di halaman detail perkara PP, Mediator, dan Hakim.
 - **Proteksi Perkara Selesai:** Mencegah penggantian mediator jika perkara sudah memiliki Hasil Mediasi Final / Selesai.
