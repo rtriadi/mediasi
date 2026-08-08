@@ -38,11 +38,29 @@ class Hasil extends MY_Controller {
             return;
         }
 
-        // Cek jika masih ada sesi mediasi aktif yang belum diselesaikan (presensi belum diisi)
+        // Cek keberadaan sesi mediasi & status sesi
         $this->load->model('M_jadwal');
-        $unfinished = $this->M_jadwal->get_unfinished_session($perkara_id);
-        if ($unfinished) {
-            $this->session->set_flashdata('error', 'Sesi mediasi aktif (tanggal ' . date('d/m/Y', strtotime($unfinished->tgl_mediasi)) . ') belum diselesaikan. Harap catat presensi & selesaikan sesi terlebih dahulu sebelum menginput Hasil Mediasi.');
+        $jadwal_list = $this->M_jadwal->get_by_perkara($perkara_id);
+        if (empty($jadwal_list)) {
+            $this->session->set_flashdata('error', 'Belum ada sesi mediasi yang dilaksanakan. Anda harus membuat dan menyelesaikan minimal 1 sesi mediasi sebelum menginput Hasil Mediasi Final.');
+            redirect("mediator/perkara_saya/detail/{$perkara_id}");
+            return;
+        }
+
+        $has_completed_session = false;
+        foreach ($jadwal_list as $j) {
+            if (($j->status_sesi ?? '') === 'selesai') {
+                $has_completed_session = true;
+            }
+            if (($j->status_sesi ?? '') === 'terjadwal') {
+                $this->session->set_flashdata('error', 'Sesi mediasi aktif (tanggal ' . date('d/m/Y', strtotime($j->tgl_mediasi)) . ') belum diselesaikan. Harap catat presensi & selesaikan sesi terlebih dahulu.');
+                redirect("mediator/perkara_saya/detail/{$perkara_id}");
+                return;
+            }
+        }
+
+        if (!$has_completed_session) {
+            $this->session->set_flashdata('error', 'Belum ada sesi mediasi yang diselesaikan. Harap catat presensi & selesaikan sesi mediasi terlebih dahulu.');
             redirect("mediator/perkara_saya/detail/{$perkara_id}");
             return;
         }
@@ -50,33 +68,33 @@ class Hasil extends MY_Controller {
         if ($this->input->post()) {
             $this->form_validation->set_rules('hasil', 'Hasil Mediasi', 'required|in_list[berhasil,berhasil_sebagian,tidak_berhasil]');
 
-            if ($this->form_validation->run() === FALSE) {
+            if (empty($_FILES['file_laporan']['name'])) {
+                $this->session->set_flashdata('error', 'File Laporan Hasil Mediasi (format PDF) wajib diunggah.');
+            } elseif ($this->form_validation->run() === FALSE) {
                 $this->session->set_flashdata('error', validation_errors(' ', ' | '));
             } else {
                 $file_name = null;
 
-                // Handle file upload if present
-                if (!empty($_FILES['file_laporan']['name'])) {
-                    $upload_path = FCPATH . 'uploads/laporan/';
-                    if (!is_dir($upload_path)) {
-                        @mkdir($upload_path, 0777, true);
-                    }
-
-                    $config['upload_path']   = realpath($upload_path) ?: $upload_path;
-                    $config['allowed_types'] = 'pdf';
-                    $config['max_size']      = 10240; // 10MB
-                    $config['file_name']     = 'laporan_' . $perkara_id . '_' . time();
-
-                    $this->load->library('upload', $config);
-                    $this->upload->initialize($config);
-
-                    if (!$this->upload->do_upload('file_laporan')) {
-                        $this->session->set_flashdata('error', 'Gagal upload file: ' . $this->upload->display_errors('', ''));
-                        redirect("mediator/hasil/input/{$perkara_id}");
-                        return;
-                    }
-                    $file_name = $this->upload->data('file_name');
+                // Handle file upload
+                $upload_path = FCPATH . 'uploads/laporan/';
+                if (!is_dir($upload_path)) {
+                    @mkdir($upload_path, 0777, true);
                 }
+
+                $config['upload_path']   = realpath($upload_path) ?: $upload_path;
+                $config['allowed_types'] = 'pdf';
+                $config['max_size']      = 10240; // 10MB
+                $config['file_name']     = 'laporan_' . $perkara_id . '_' . time();
+
+                $this->load->library('upload', $config);
+                $this->upload->initialize($config);
+
+                if (!$this->upload->do_upload('file_laporan')) {
+                    $this->session->set_flashdata('error', 'Gagal upload file: ' . $this->upload->display_errors('', ''));
+                    redirect("mediator/hasil/input/{$perkara_id}");
+                    return;
+                }
+                $file_name = $this->upload->data('file_name');
 
                 $this->M_hasil->insert([
                     'perkara_id'   => $perkara_id,

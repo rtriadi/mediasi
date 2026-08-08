@@ -1,10 +1,13 @@
 <?php
 $has_unfinished = false;
+$has_completed  = false;
 if (!empty($jadwal)) {
     foreach ($jadwal as $sj) {
         if (($sj->status_sesi ?? 'terjadwal') === 'terjadwal') {
             $has_unfinished = true;
-            break;
+        }
+        if (($sj->status_sesi ?? '') === 'selesai') {
+            $has_completed = true;
         }
     }
 }
@@ -41,10 +44,12 @@ if (!empty($jadwal)) {
                         class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors shadow-sm">
                         + Buat Jadwal Mediasi
                     </a>
-                    <a href="<?= site_url("mediator/hasil/input/{$perkara->id}") ?>"
-                        class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors shadow-sm">
-                        ✓ Input Hasil Mediasi
-                    </a>
+                        <?php if ($has_completed): ?>
+                        <a href="<?= site_url("mediator/hasil/input/{$perkara->id}") ?>"
+                            class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors shadow-sm">
+                            ✓ Input Hasil Mediasi
+                        </a>
+                        <?php endif; ?>
                     <?php endif; ?>
                 <?php else: ?>
                 <span class="px-3 py-1 bg-green-100 text-green-800 font-semibold text-sm rounded-full">Mediasi Selesai</span>

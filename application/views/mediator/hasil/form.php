@@ -49,8 +49,10 @@
 
             <!-- Upload File Laporan PDF -->
             <div class="mb-5">
-                <label for="file_laporan" class="block text-sm font-medium text-gray-700 mb-1.5">File Laporan Mediasi (PDF)</label>
-                <input type="file" id="file_laporan" name="file_laporan" accept=".pdf"
+                <label for="file_laporan" class="block text-sm font-semibold text-gray-900 mb-1.5">
+                    File Laporan Mediasi (PDF) <span class="text-red-500">* Wajib</span>
+                </label>
+                <input type="file" id="file_laporan" name="file_laporan" accept=".pdf" required
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                 <p class="text-xs text-gray-400 mt-1">Format PDF, Ukuran Maksimal 10MB.</p>
             </div>
