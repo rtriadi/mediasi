@@ -124,6 +124,11 @@
                         $num_style   = 'bg-rose-500 text-white';
                         $time_style  = 'bg-rose-100 text-rose-900 border-rose-200';
                         $badge_html  = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-200 text-rose-900 border border-rose-300">✕ Dibatalkan</span>';
+                    } elseif ($status_sesi === 'selesai') {
+                        $card_style  = 'border-emerald-300 bg-emerald-50/50 shadow-sm';
+                        $num_style   = 'bg-emerald-600 text-white';
+                        $time_style  = 'bg-emerald-100 text-emerald-800 border-emerald-200';
+                        $badge_html  = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">✓ Selesai</span>';
                     } else {
                         $card_style  = $s->tgl_mediasi >= date('Y-m-d') ? 'border-blue-500/80 bg-blue-50/40 shadow-sm' : 'border-slate-200 bg-slate-50/50';
                         $num_style   = 'bg-blue-600 text-white';
