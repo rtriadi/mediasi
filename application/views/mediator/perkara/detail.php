@@ -151,12 +151,26 @@
         <!-- Col 2: Riwayat Sesi & Laporan -->
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 md:col-span-2 space-y-6">
             <div>
+                <?php
+                $has_unfinished = false;
+                if (!empty($jadwal)) {
+                    foreach ($jadwal as $sj) {
+                        if (($sj->status_sesi ?? 'terjadwal') === 'terjadwal') { $has_unfinished = true; break; }
+                    }
+                }
+                ?>
                 <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
                     <h3 class="text-base font-semibold text-gray-900">Riwayat Sesi Mediasi</h3>
                     <?php if ($perkara->status !== 'selesai'): ?>
-                    <a href="<?= site_url("mediator/jadwal/tambah/{$perkara->id}") ?>" class="text-xs text-blue-600 hover:text-blue-800 font-medium">
-                        + Tambah Sesi
-                    </a>
+                        <?php if ($has_unfinished): ?>
+                        <span class="text-xs text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 font-semibold" title="Selesaikan sesi mediasi aktif terlebih dahulu">
+                            ⚠️ Selesaikan Sesi Aktif Terlebih Dahulu
+                        </span>
+                        <?php else: ?>
+                        <a href="<?= site_url("mediator/jadwal/tambah/{$perkara->id}") ?>" class="text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg transition-all shadow-sm">
+                            + Tambah Sesi Mediasi
+                        </a>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
 
@@ -179,6 +193,8 @@
                                     <span class="font-semibold text-gray-900 text-sm"><?= tgl_indo($s->tgl_mediasi, true) ?></span>
                                     <?php if ($st === 'terjadwal'): ?>
                                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">Terjadwal</span>
+                                    <?php elseif ($st === 'selesai'): ?>
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">✓ Selesai</span>
                                     <?php elseif ($st === 'dijadwal_ulang'): ?>
                                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">↩ Dijadwal Ulang</span>
                                     <?php elseif ($st === 'batal'): ?>
@@ -202,14 +218,41 @@
                             <p class="text-gray-500 mt-1 italic">"<?= htmlspecialchars($s->keterangan) ?>"</p>
                             <?php endif; ?>
 
-                            <?php if ($is_act && $perkara->status !== 'selesai'): ?>
-                            <div class="mt-2.5 pt-2 border-t border-gray-200/60 flex items-center gap-2">
-                                <a href="<?= site_url("mediator/jadwal/edit/{$s->id}") ?>" class="text-[11px] font-bold text-blue-600 hover:text-blue-800 px-2 py-0.5 bg-blue-50 rounded border border-blue-200">
+                            <?php if (!empty($s->catatan_sesi)): ?>
+                            <div class="mt-2 p-2 bg-emerald-50/70 rounded-lg border border-emerald-200/70 text-gray-800">
+                                <strong class="text-emerald-800 font-bold block mb-0.5">📝 Catatan Jalannya Sesi:</strong>
+                                <p class="italic"><?= nl2br(htmlspecialchars($s->catatan_sesi)) ?></p>
+                            </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($s->kehadiran)): ?>
+                            <div class="mt-2 p-2.5 bg-gray-100/80 rounded-lg space-y-1">
+                                <span class="font-bold text-gray-700 block text-[11px]">📋 Presensi Kehadiran Pihak:</span>
+                                <?php foreach ($s->kehadiran as $kh): ?>
+                                <div class="flex items-center justify-between text-[11px]">
+                                    <span class="text-gray-800">• <?= htmlspecialchars($kh->nama_pihak) ?> <span class="text-gray-500">(<?= htmlspecialchars($kh->jenis_pihak) ?>)</span></span>
+                                    <span class="font-bold <?= $kh->status_kehadiran === 'hadir' ? 'text-green-700' : ($kh->status_kehadiran === 'kuasa' ? 'text-indigo-700' : 'text-red-600') ?>">
+                                        <?= $kh->status_kehadiran === 'hadir' ? '✓ Hadir' : ($kh->status_kehadiran === 'kuasa' ? '👔 Kuasa' : '✕ Absen') ?>
+                                        <?= $kh->catatan ? ' <span class="font-normal italic text-gray-500">('.htmlspecialchars($kh->catatan).')</span>' : '' ?>
+                                    </span>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                            <?php endif; ?>
+
+                            <?php if ($perkara->status !== 'selesai'): ?>
+                            <div class="mt-2.5 pt-2 border-t border-gray-200/60 flex items-center flex-wrap gap-2">
+                                <?php if ($st === 'terjadwal'): ?>
+                                <a href="<?= site_url("mediator/jadwal/selesai/{$s->id}") ?>" class="text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1 rounded-lg shadow-sm transition-all">
+                                    <i class="fa-solid fa-circle-check mr-1"></i> Presensi & Selesaikan Sesi
+                                </a>
+                                <a href="<?= site_url("mediator/jadwal/edit/{$s->id}") ?>" class="text-[11px] font-bold text-blue-600 hover:text-blue-800 px-2.5 py-1 bg-blue-50 rounded border border-blue-200">
                                     <i class="fa-solid fa-pen-to-square mr-1"></i> Edit Jadwal
                                 </a>
-                                <a href="<?= site_url("mediator/jadwal/reschedule/{$s->id}") ?>" class="text-[11px] font-bold text-amber-700 hover:text-amber-900 px-2 py-0.5 bg-amber-50 rounded border border-amber-200">
+                                <a href="<?= site_url("mediator/jadwal/reschedule/{$s->id}") ?>" class="text-[11px] font-bold text-amber-700 hover:text-amber-900 px-2.5 py-1 bg-amber-50 rounded border border-amber-200">
                                     <i class="fa-solid fa-calendar-days mr-1"></i> Reschedule
                                 </a>
+                                <?php endif; ?>
                             </div>
                             <?php endif; ?>
                         </div>

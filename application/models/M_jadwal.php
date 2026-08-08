@@ -72,7 +72,57 @@ class M_jadwal extends CI_Model {
         $this->db->from('sesi_mediasi s');
         $this->db->join('ruangan r', 'r.id = s.ruangan_id', 'left');
         $this->db->where('s.perkara_id', $perkara_id);
-        return $this->db->order_by('s.tgl_mediasi', 'ASC')->get()->result();
+        $sesi_list = $this->db->order_by('s.tgl_mediasi', 'ASC')->get()->result();
+
+        foreach ($sesi_list as &$s) {
+            $s->kehadiran = $this->get_kehadiran($s->id);
+        }
+        return $sesi_list;
+    }
+
+    /**
+     * Cek apakah ada sesi yang masih 'terjadwal' (belum selesai) untuk perkara ini.
+     */
+    public function get_unfinished_session($perkara_id) {
+        return $this->db->where('perkara_id', $perkara_id)
+                        ->where('status_sesi', 'terjadwal')
+                        ->order_by('id', 'DESC')
+                        ->get('sesi_mediasi')
+                        ->row();
+    }
+
+    /**
+     * Ambil data kehadiran pihak untuk suatu sesi.
+     */
+    public function get_kehadiran($sesi_id) {
+        $this->db->select('sk.*, pp.nama as nama_pihak, pp.jenis as jenis_pihak, pp.kuasa_hukum');
+        $this->db->from('sesi_kehadiran sk');
+        $this->db->join('perkara_pihak pp', 'pp.id = sk.pihak_id');
+        $this->db->where('sk.sesi_id', $sesi_id);
+        $this->db->order_by('pp.jenis, pp.urutan');
+        return $this->db->get()->result();
+    }
+
+    /**
+     * Simpan data kehadiran & selesaikan sesi.
+     */
+    public function selesaikan_sesi($sesi_id, $catatan_sesi, $kehadiran_batch) {
+        $this->db->where('id', $sesi_id)->update('sesi_mediasi', [
+            'status_sesi'  => 'selesai',
+            'catatan_sesi' => $catatan_sesi,
+        ]);
+
+        if (!empty($kehadiran_batch)) {
+            foreach ($kehadiran_batch as $kh) {
+                $this->db->replace('sesi_kehadiran', [
+                    'sesi_id'          => $sesi_id,
+                    'pihak_id'         => $kh['pihak_id'],
+                    'status_kehadiran' => $kh['status_kehadiran'],
+                    'catatan'          => $kh['catatan'] ?? null,
+                ]);
+            }
+        }
+        return true;
     }
 
     /**
@@ -112,3 +162,4 @@ class M_jadwal extends CI_Model {
         return $this->db->get()->row();
     }
 }
+

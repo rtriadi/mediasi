@@ -40,6 +40,8 @@
 - Kalender interaktif visual berbasis blok waktu.
 - Penjadwalan mediasi tatap muka (pilihan ruangan) atau online (virtual meeting link).
 - Fitur **Penjadwalan Ulang (*Reschedule*)** dan **Pembatalan Sesi** yang otomatis memperbarui tampilan kalender.
+- **Sequential Session Enforcement:** Mencegah pembuat jadwal sesi baru jika sesi mediasi sebelumnya yang berstatus `terjadwal` belum diselesaikan.
+- **Presensi Kehadiran & Catatan Sesi:** Mediator dapat mencatat kehadiran setiap pihak (*Hadir*, *Absen*, atau *Kuasa Hukum*) beserta catatan resume jalannya sesi sebelum mengubah status sesi menjadi `selesai`.
 
 ### 3. 📲 Otomatisasi Broadcast Notifikasi (WA & Email):
 - Notifikasi penugasan baru dan pemberitahuan penggantian mediator langsung dikirim ke WhatsApp dan Email mediator terkait.

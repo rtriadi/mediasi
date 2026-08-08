@@ -124,6 +124,14 @@ class Jadwal extends MY_Controller {
             return;
         }
 
+        // Validasi jika ada sesi sebelumnya yang belum selesai
+        $unfinished = $this->M_jadwal->get_unfinished_session($perkara_id);
+        if ($unfinished) {
+            $this->session->set_flashdata('error', 'Sesi mediasi sebelumnya (tanggal ' . date('d/m/Y', strtotime($unfinished->tgl_mediasi)) . ') belum diselesaikan. Harap catat presensi & selesaikan sesi tersebut terlebih dahulu.');
+            redirect("mediator/perkara_saya/detail/{$perkara_id}");
+            return;
+        }
+
         if ($this->input->post()) {
             $this->form_validation->set_rules('tgl_mediasi', 'Tanggal Mediasi', 'required');
             $this->form_validation->set_rules('jam_mulai',   'Jam Mulai',       'required');
@@ -397,5 +405,68 @@ class Jadwal extends MY_Controller {
             'ruangans' => $this->M_ruangan->get_aktif(),
         ]);
     }
+
+    /**
+     * Catat Kehadiran Pihak & Selesaikan Sesi Mediasi
+     */
+    public function selesai($sesi_id) {
+        $mediator_id = $this->_verify_mediator_role();
+        $sesi = $this->M_jadwal->get_by_id($sesi_id);
+        if (!$sesi) show_404();
+
+        $perkara = $this->M_perkara->get_by_id($sesi->perkara_id);
+        if (!$perkara) show_404();
+
+        if (!in_array('admin', $this->session->userdata('roles') ?: [$this->session->userdata('role')]) && $sesi->mediator_id != $mediator_id) {
+            show_error('Akses ditolak.', 403);
+        }
+
+        if ($sesi->status_sesi !== 'terjadwal') {
+            $this->session->set_flashdata('error', 'Hanya sesi berstatus Terjadwal yang dapat diselesaikan.');
+            redirect("mediator/perkara_saya/detail/{$sesi->perkara_id}");
+            return;
+        }
+
+        $pihak = $this->M_perkara->get_pihak($sesi->perkara_id);
+
+        if ($this->input->post()) {
+            $this->form_validation->set_rules('catatan_sesi', 'Catatan Jalannya Sesi', 'required|trim|min_length[5]');
+
+            if ($this->form_validation->run() === FALSE) {
+                $this->session->set_flashdata('error', validation_errors(' ', ' | '));
+            } else {
+                $catatan_sesi  = $this->input->post('catatan_sesi', true);
+                $raw_kehadiran = $this->input->post('kehadiran') ?: [];
+
+                $kehadiran_batch = [];
+                foreach ($pihak as $p) {
+                    $st = $raw_kehadiran[$p->id]['status'] ?? 'hadir';
+                    $ct = $raw_kehadiran[$p->id]['catatan'] ?? null;
+                    $kehadiran_batch[] = [
+                        'pihak_id'         => $p->id,
+                        'status_kehadiran' => $st,
+                        'catatan'          => trim($ct) ?: null,
+                    ];
+                }
+
+                $this->M_jadwal->selesaikan_sesi($sesi_id, $catatan_sesi, $kehadiran_batch);
+
+                $this->session->set_flashdata('success', 'Sesi mediasi berhasil diselesaikan dan presensi kehadiran pihak telah tersimpan.');
+                redirect("mediator/perkara_saya/detail/{$sesi->perkara_id}");
+                return;
+            }
+        }
+
+        $existing_kehadiran = $this->M_jadwal->get_kehadiran($sesi_id);
+
+        $this->render('mediator/jadwal/selesai', [
+            'title'              => "Presensi Kehadiran & Selesaikan Sesi — Perkara {$perkara->nomor_perkara}",
+            'sesi'               => $sesi,
+            'perkara'            => $perkara,
+            'pihak'              => $pihak,
+            'existing_kehadiran' => $existing_kehadiran,
+        ]);
+    }
 }
+
 

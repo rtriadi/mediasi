@@ -147,8 +147,10 @@
                             <div class="flex items-center justify-between flex-wrap gap-2">
                                 <div class="flex items-center gap-2">
                                     <span class="font-semibold text-gray-900 text-sm <?= !$is_act ? 'line-through text-gray-500' : '' ?>"><?= tgl_indo($s->tgl_mediasi, true) ?></span>
-                                    <?php if ($st === 'terjadwal'): ?>
+                                     <?php if ($st === 'terjadwal'): ?>
                                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">Terjadwal</span>
+                                    <?php elseif ($st === 'selesai'): ?>
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">✓ Selesai</span>
                                     <?php elseif ($st === 'dijadwal_ulang'): ?>
                                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">↩ Dijadwal Ulang</span>
                                     <?php elseif ($st === 'batal'): ?>
@@ -172,6 +174,28 @@
                             <p class="text-amber-800 mt-1 italic bg-amber-100/60 px-2 py-0.5 rounded inline-block">"<?= htmlspecialchars($s->alasan_reschedule) ?>"</p>
                             <?php elseif ($s->keterangan): ?>
                             <p class="text-gray-500 mt-1 italic">"<?= htmlspecialchars($s->keterangan) ?>"</p>
+                            <?php endif; ?>
+
+                            <?php if (!empty($s->catatan_sesi)): ?>
+                            <div class="mt-2 p-2 bg-emerald-50/70 rounded-lg border border-emerald-200/70 text-gray-800">
+                                <strong class="text-emerald-800 font-bold block mb-0.5">📝 Catatan Jalannya Sesi:</strong>
+                                <p class="italic"><?= nl2br(htmlspecialchars($s->catatan_sesi)) ?></p>
+                            </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($s->kehadiran)): ?>
+                            <div class="mt-2 p-2.5 bg-gray-100/80 rounded-lg space-y-1">
+                                <span class="font-bold text-gray-700 block text-[11px]">📋 Presensi Kehadiran Pihak:</span>
+                                <?php foreach ($s->kehadiran as $kh): ?>
+                                <div class="flex items-center justify-between text-[11px]">
+                                    <span class="text-gray-800">• <?= htmlspecialchars($kh->nama_pihak) ?> <span class="text-gray-500">(<?= htmlspecialchars($kh->jenis_pihak) ?>)</span></span>
+                                    <span class="font-bold <?= $kh->status_kehadiran === 'hadir' ? 'text-green-700' : ($kh->status_kehadiran === 'kuasa' ? 'text-indigo-700' : 'text-red-600') ?>">
+                                        <?= $kh->status_kehadiran === 'hadir' ? '✓ Hadir' : ($kh->status_kehadiran === 'kuasa' ? '👔 Kuasa' : '✕ Absen') ?>
+                                        <?= $kh->catatan ? ' <span class="font-normal italic text-gray-500">('.htmlspecialchars($kh->catatan).')</span>' : '' ?>
+                                    </span>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
                             <?php endif; ?>
                         </div>
                     </div>
