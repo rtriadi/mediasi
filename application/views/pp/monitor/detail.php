@@ -17,11 +17,13 @@
             <div class="text-right flex flex-col items-end">
                 <span class="text-xs text-gray-400 block mb-1">Status</span>
                 <div class="flex items-center gap-3">
+                    <?php if ($perkara->status !== 'selesai' && empty($hasil)): ?>
                     <a href="<?= site_url("pp/perkara/edit/{$perkara->id}") ?>"
                         class="inline-flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold px-3.5 py-2 rounded-xl transition-all border border-indigo-200">
                         <i class="fa-solid fa-pen-to-square"></i>
                         <span>Edit Perkara</span>
                     </a>
+                    <?php endif; ?>
                     <a href="<?= site_url("pp/monitor/cetak_resume/{$perkara->id}") ?>" target="_blank"
                         class="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl transition-all border border-slate-300">
                         <i class="fa-solid fa-print"></i>

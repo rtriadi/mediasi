@@ -154,6 +154,11 @@ class Perkara extends MY_Controller {
             show_error('Akses ditolak. Anda tidak memiliki wewenang mengedit perkara ini.', 403);
         }
 
+        $has_hasil = $this->db->get_where('hasil_mediasi', ['perkara_id' => $id])->row();
+        if ($has_hasil || $perkara->status === 'selesai') {
+            show_error('Akses ditolak. Perkara ini sudah memiliki laporan/hasil mediasi (Selesai) dan tidak dapat diubah lagi.', 403);
+        }
+
         if ($this->input->post()) {
             $nomor_perkara = $this->input->post('nomor_perkara', true);
             $this->form_validation->set_rules('nomor_perkara',     'Nomor Perkara',     'required|trim');
