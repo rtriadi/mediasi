@@ -44,9 +44,28 @@
 
                 <div>
                     <label for="nama_hakim" class="block text-sm font-medium text-gray-700 mb-1.5">Majelis Hakim <span class="text-red-500">*</span></label>
-                    <input type="text" id="nama_hakim" name="nama_hakim" required
-                        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        value="<?= htmlspecialchars($perkara->nama_hakim) ?>">
+                    <select id="nama_hakim" name="nama_hakim" required
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="">— Pilih Majelis Hakim —</option>
+                        <?php if (!empty($hakim_list)): ?>
+                            <?php foreach ($hakim_list as $h): ?>
+                            <option value="<?= htmlspecialchars($h->nama) ?>" <?= $perkara->nama_hakim == $h->nama ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($h->nama) ?>
+                            </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                        <?php
+                        $in_list = false;
+                        if (!empty($hakim_list)) {
+                            foreach ($hakim_list as $h) {
+                                if ($h->nama == $perkara->nama_hakim) { $in_list = true; break; }
+                            }
+                        }
+                        if (!$in_list && !empty($perkara->nama_hakim)):
+                        ?>
+                        <option value="<?= htmlspecialchars($perkara->nama_hakim) ?>" selected><?= htmlspecialchars($perkara->nama_hakim) ?></option>
+                        <?php endif; ?>
+                    </select>
                 </div>
 
                 <div>

@@ -10,7 +10,7 @@ class Perkara extends MY_Controller {
 
     public function __construct() {
         parent::__construct();
-        $this->load->model(['M_perkara', 'M_mediator', 'M_jenis_perkara']);
+        $this->load->model(['M_perkara', 'M_mediator', 'M_jenis_perkara', 'M_user']);
         $this->load->library(['EmailGateway', 'WaGateway']);
     }
 
@@ -97,6 +97,7 @@ class Perkara extends MY_Controller {
         $this->render('pp/perkara/tambah', [
             'title'         => 'Input Perkara Baru',
             'jenis_perkara' => $this->M_jenis_perkara->get_all_aktif(),
+            'hakim_list'    => $this->M_user->get_hakim(),
         ]);
     }
 
@@ -279,6 +280,7 @@ class Perkara extends MY_Controller {
             'pihak'         => $this->M_perkara->get_pihak($id),
             'jenis_perkara' => $this->M_jenis_perkara->get_all_aktif(),
             'mediators'     => $this->M_mediator->get_aktif(),
+            'hakim_list'    => $this->M_user->get_hakim(),
         ]);
     }
 }

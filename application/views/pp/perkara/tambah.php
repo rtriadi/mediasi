@@ -41,10 +41,17 @@
 
                 <div>
                     <label for="nama_hakim" class="block text-sm font-medium text-gray-700 mb-1.5">Majelis Hakim <span class="text-red-500">*</span></label>
-                    <input type="text" id="nama_hakim" name="nama_hakim" required
-                        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Contoh: Dr. H. Fulan, S.H., M.H."
-                        value="<?= set_value('nama_hakim') ?>">
+                    <select id="nama_hakim" name="nama_hakim" required
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="">— Pilih Majelis Hakim —</option>
+                        <?php if (!empty($hakim_list)): ?>
+                            <?php foreach ($hakim_list as $h): ?>
+                            <option value="<?= htmlspecialchars($h->nama) ?>" <?= set_select('nama_hakim', $h->nama) ?>>
+                                <?= htmlspecialchars($h->nama) ?>
+                            </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
                 </div>
 
                 <div>

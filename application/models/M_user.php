@@ -82,4 +82,16 @@ class M_user extends CI_Model {
         if ($exclude_id) $this->db->where('id !=', $exclude_id);
         return $this->db->count_all_results('users') > 0;
     }
+
+    /** Ambil semua user aktif yang memiliki role hakim */
+    public function get_hakim() {
+        $this->db->where('is_active', 1);
+        $this->db->group_start();
+        $this->db->where('role', 'hakim');
+        $this->db->or_like('role', 'hakim');
+        $this->db->group_end();
+        $this->db->order_by('nama', 'ASC');
+        return $this->db->get('users')->result();
+    }
 }
+
