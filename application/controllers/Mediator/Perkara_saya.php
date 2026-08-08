@@ -63,11 +63,7 @@ class Perkara_saya extends MY_Controller {
         $is_privileged = in_array('admin', $user_roles) || in_array('pp', $user_roles) || in_array('hakim', $user_roles);
 
         if (!$is_privileged && $perkara->mediator_id != $mediator_id) {
-            $was_assigned = $this->db->get_where('perkara_mediator_log', ['perkara_id' => $id, 'mediator_id' => $mediator_id])->num_rows() > 0
-                         || $this->db->get_where('sesi_mediasi', ['perkara_id' => $id, 'mediator_id' => $mediator_id])->num_rows() > 0;
-            if (!$was_assigned) {
-                show_error('Akses ditolak. Perkara ini tidak di-assign ke Anda.', 403);
-            }
+            show_error('Akses ditolak. Penugasan Anda pada perkara ini telah digantikan oleh mediator lain.', 403);
         }
 
         $pihak  = $this->M_perkara->get_pihak($id);

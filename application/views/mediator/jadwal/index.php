@@ -101,6 +101,27 @@
                         <?php else: ?>
                             <span class="text-slate-700 font-medium"><?= htmlspecialchars($j->nama_ruangan ?: $j->tempat_lain ?: '—') ?></span>
                         <?php endif; ?>
+
+                        <?php if (!empty($j->catatan_sesi)): ?>
+                        <div class="mt-1.5 p-2 bg-emerald-50/80 border border-emerald-200/80 rounded-lg text-[11px] text-emerald-950 max-w-xs">
+                            <strong class="text-emerald-800 font-bold block mb-0.5">📝 Catatan Sesi:</strong>
+                            <p class="italic leading-snug"><?= nl2br(htmlspecialchars($j->catatan_sesi)) ?></p>
+                        </div>
+                        <?php endif; ?>
+
+                        <?php if (!empty($j->kehadiran)): ?>
+                        <div class="mt-1.5 p-2 bg-slate-50 border border-slate-200 rounded-lg text-[11px] space-y-1 max-w-xs">
+                            <strong class="text-slate-700 font-bold block mb-0.5">📋 Presensi Pihak:</strong>
+                            <?php foreach ($j->kehadiran as $kh): ?>
+                            <div class="flex items-center justify-between text-[10px] gap-2">
+                                <span class="text-slate-700 font-medium truncate">• <?= htmlspecialchars($kh->nama_pihak) ?></span>
+                                <span class="font-bold flex-shrink-0 <?= $kh->status_kehadiran === 'hadir' ? 'text-emerald-700' : ($kh->status_kehadiran === 'kuasa' ? 'text-indigo-700' : 'text-rose-600') ?>">
+                                    <?= $kh->status_kehadiran === 'hadir' ? '✓ Hadir' : ($kh->status_kehadiran === 'kuasa' ? '👔 Kuasa' : '✕ Absen') ?>
+                                </span>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php endif; ?>
                     </td>
                     <td class="px-4 py-3.5">
                         <?php
@@ -158,11 +179,21 @@
                             </button>
                         </div>
                         <?php else: ?>
-                            <a href="<?= site_url("mediator/perkara_saya/detail/{$j->perkara_id}") ?>"
-                                class="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-bold px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors border border-blue-200">
-                                <span>Detail Perkara</span>
-                                <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                            </a>
+                            <?php
+                                $my_mediator_id = $this->session->userdata('mediator_id');
+                                $is_my_active_case = !empty($j->active_mediator_id) && $j->active_mediator_id == $my_mediator_id;
+                            ?>
+                            <?php if ($is_my_active_case): ?>
+                                <a href="<?= site_url("mediator/perkara_saya/detail/{$j->perkara_id}") ?>"
+                                    class="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-bold px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors border border-blue-200">
+                                    <span>Detail Perkara</span>
+                                    <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                                </a>
+                            <?php else: ?>
+                                <span class="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-2.5 py-1 rounded-lg" title="Penugasan Anda pada perkara ini sudah digantikan oleh mediator lain">
+                                    <i class="fa-solid fa-user-minus"></i> Digantikan
+                                </span>
+                            <?php endif; ?>
                         <?php endif; ?>
                     </td>
                 </tr>

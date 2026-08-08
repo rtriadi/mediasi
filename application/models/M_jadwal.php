@@ -33,7 +33,7 @@ class M_jadwal extends CI_Model {
     }
 
     public function get_by_mediator($mediator_id, $filter = [], $limit = 10, $offset = 0) {
-        $this->db->select('s.*, p.nomor_perkara, p.tgl_batas_mediasi, r.nama_ruangan');
+        $this->db->select('s.*, p.nomor_perkara, p.tgl_batas_mediasi, p.mediator_id as active_mediator_id, r.nama_ruangan');
         $this->db->from('sesi_mediasi s');
         $this->db->join('perkara p', 'p.id = s.perkara_id');
         $this->db->join('ruangan r', 'r.id = s.ruangan_id', 'left');
