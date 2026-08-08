@@ -55,6 +55,7 @@
 - **Dual Notification:** Mediator lama otomatis menerima notifikasi pencabutan penugasan via WA/Email saat diganti, dan mediator baru menerima notifikasi penugasan.
 - **Timeline Riwayat Mediator:** Menampilkan riwayat lengkap mediator (aktif/digantikan) di halaman detail perkara PP, Mediator, dan Hakim.
 - **Proteksi Perkara Selesai:** Mencegah penggantian mediator jika perkara sudah memiliki Hasil Mediasi Final / Selesai.
+- **Custom Modern Error Views:** Seluruh pesan kesalahan sistem (`show_error`, `show_404`, database error) kini ditangani dengan antarmuka modern yang interaktif, dilengkapi tombol navigasi kembali dan dashboard.
 
 ### 5. 📑 Seed Data Jenis Perkara (PERMA No. 1 Tahun 2016):
 - Dilengkapi dengan 16 seed data jenis perkara perdata Islam wajib mediasi (Perceraian, Hadhanah, Harta Bersama, Kewarisan, Ekonomi Syariah, Wakaf, Zakat, hingga Perlawanan/Verzet).
