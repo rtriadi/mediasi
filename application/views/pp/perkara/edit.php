@@ -110,6 +110,7 @@
                     <div id="container-penggugat" class="space-y-3">
                         <?php foreach ($penggugats as $idx => $p): ?>
                         <div class="pihak-row grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 p-3.5 bg-gray-50 rounded-xl border border-gray-200 relative">
+                            <input type="hidden" name="pihak_penggugat[<?= $idx ?>][id]" value="<?= $p->id ?>">
                             <div>
                                 <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Nama Pihak <span class="text-red-500">*</span></label>
                                 <input type="text" name="pihak_penggugat[<?= $idx ?>][nama]" required value="<?= htmlspecialchars($p->nama) ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500">
@@ -145,6 +146,7 @@
                     <div id="container-tergugat" class="space-y-3">
                         <?php foreach ($tergugats as $idx => $p): ?>
                         <div class="pihak-row grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 p-3.5 bg-gray-50 rounded-xl border border-gray-200">
+                            <input type="hidden" name="pihak_tergugat[<?= $idx ?>][id]" value="<?= $p->id ?>">
                             <div>
                                 <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Nama Pihak <span class="text-red-500">*</span></label>
                                 <input type="text" name="pihak_tergugat[<?= $idx ?>][nama]" required value="<?= htmlspecialchars($p->nama) ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500">
@@ -180,6 +182,7 @@
                     <div id="container-turut" class="space-y-3">
                         <?php foreach ($turuts as $idx => $p): ?>
                         <div class="pihak-row grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 p-3.5 bg-gray-50 rounded-xl border border-gray-200">
+                            <input type="hidden" name="pihak_turut[<?= $idx ?>][id]" value="<?= $p->id ?>">
                             <div>
                                 <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Nama Pihak</label>
                                 <input type="text" name="pihak_turut[<?= $idx ?>][nama]" value="<?= htmlspecialchars($p->nama) ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500">

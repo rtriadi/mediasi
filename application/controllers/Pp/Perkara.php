@@ -176,6 +176,7 @@ class Perkara extends MY_Controller {
                 foreach ($pihak_penggugat as $idx => $p) {
                     if (!empty($p['nama'])) {
                         $all_pihak[] = [
+                            'id'          => $p['id'] ?? null,
                             'perkara_id'  => $id,
                             'jenis'       => 'penggugat',
                             'nama'        => trim($p['nama']),
@@ -190,6 +191,7 @@ class Perkara extends MY_Controller {
                 foreach ($pihak_tergugat as $idx => $p) {
                     if (!empty($p['nama'])) {
                         $all_pihak[] = [
+                            'id'          => $p['id'] ?? null,
                             'perkara_id'  => $id,
                             'jenis'       => 'tergugat',
                             'nama'        => trim($p['nama']),
@@ -205,6 +207,7 @@ class Perkara extends MY_Controller {
                 foreach ($pihak_turut as $idx => $p) {
                     if (!empty($p['nama'])) {
                         $all_pihak[] = [
+                            'id'          => $p['id'] ?? null,
                             'perkara_id'  => $id,
                             'jenis'       => 'turut_tergugat',
                             'nama'        => trim($p['nama']),
@@ -267,11 +270,26 @@ class Perkara extends MY_Controller {
                     $this->wagateway->kirim_penugasan_mediator($id, $new_mediator_id);
                 }
 
-                // Re-sync Data Pihak
-                $this->db->where('perkara_id', $id)->delete('perkara_pihak');
-                if (!empty($all_pihak)) {
-                    $this->M_perkara->insert_pihak($all_pihak);
+                // Smart Sync Data Pihak (Preserve IDs to prevent cascade deletion of attendance log)
+                $submitted_ids = [];
+                foreach ($all_pihak as $p) {
+                    $pid = $p['id'] ?? null;
+                    unset($p['id']);
+                    if (!empty($pid)) {
+                        $this->db->where('id', $pid)->update('perkara_pihak', $p);
+                        $submitted_ids[] = $pid;
+                    } else {
+                        $this->db->insert('perkara_pihak', $p);
+                        $submitted_ids[] = $this->db->insert_id();
+                    }
                 }
+
+                // Delete only pihak rows that were explicitly removed by PP in the edit form
+                $this->db->where('perkara_id', $id);
+                if (!empty($submitted_ids)) {
+                    $this->db->where_not_in('id', $submitted_ids);
+                }
+                $this->db->delete('perkara_pihak');
 
                 $this->session->set_flashdata('success', 'Data perkara dan pihak berhasil diperbarui.');
                 redirect("pp/monitor/detail/{$id}");
