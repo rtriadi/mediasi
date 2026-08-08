@@ -36,9 +36,10 @@ if (!empty($jadwal)) {
                 </a>
                 <?php if ($perkara->status !== 'selesai'): ?>
                     <?php if ($has_unfinished): ?>
-                    <span class="inline-flex items-center gap-1.5 text-xs text-amber-800 bg-amber-50 px-3.5 py-2 rounded-lg border border-amber-200 font-semibold shadow-sm" title="Harap selesaikan presensi sesi mediasi aktif terlebih dahulu">
-                        ⚠️ Selesaikan Presensi Sesi Aktif Terlebih Dahulu
-                    </span>
+                    <a href="#riwayat-sesi" class="inline-flex items-center gap-1.5 text-xs text-amber-900 bg-amber-50 hover:bg-amber-100 px-3.5 py-2 rounded-lg border border-amber-200 font-bold shadow-sm transition-all" title="Klik untuk menuju ke Sesi Aktif">
+                        <i class="fa-solid fa-arrow-down text-[10px]"></i>
+                        <span>⚠️ Selesaikan Presensi Sesi Aktif Terlebih Dahulu</span>
+                    </a>
                     <?php else: ?>
                     <a href="<?= site_url("mediator/jadwal/tambah/{$perkara->id}") ?>"
                         class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors shadow-sm">
@@ -171,7 +172,7 @@ if (!empty($jadwal)) {
         </div>
 
         <!-- Col 2: Riwayat Sesi & Laporan -->
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 md:col-span-2 space-y-6">
+        <div id="riwayat-sesi" class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 md:col-span-2 space-y-6 scroll-mt-6">
             <div>
                 <?php
                 $has_unfinished = false;

@@ -24,7 +24,7 @@
         <div class="flex flex-wrap gap-4 items-center w-full sm:w-auto">
             <div class="w-full sm:w-48">
                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Mediator</label>
-                <select name="mediator_id" id="filter-mediator" class="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <select name="mediator_id" id="filter-mediator" onchange="this.form.submit()" class="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
                     <option value="">Semua Mediator</option>
                     <?php foreach ($mediators as $m): ?>
                     <option value="<?= $m->id ?>" <?= ($filter['mediator_id'] == $m->id) ? 'selected' : '' ?>><?= htmlspecialchars($m->nama) ?></option>
@@ -34,7 +34,7 @@
 
             <div class="w-full sm:w-36">
                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Bulan</label>
-                <select name="bulan" id="filter-bulan" class="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <select name="bulan" id="filter-bulan" onchange="this.form.submit()" class="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
                     <option value="">Semua Bulan</option>
                     <?php $months = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember']; foreach ($months as $n => $m): ?>
                     <option value="<?= $n ?>" <?= ($filter['bulan'] == $n) ? 'selected' : '' ?>><?= $m ?></option>
@@ -44,7 +44,7 @@
 
             <div class="w-full sm:w-44">
                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Triwulan</label>
-                <select name="triwulan" id="filter-triwulan" class="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <select name="triwulan" id="filter-triwulan" onchange="this.form.submit()" class="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
                     <option value="">Semua Triwulan</option>
                     <option value="1" <?= ($filter['triwulan'] == 1) ? 'selected' : '' ?>>Triwulan I (Jan - Mar)</option>
                     <option value="2" <?= ($filter['triwulan'] == 2) ? 'selected' : '' ?>>Triwulan II (Apr - Jun)</option>
