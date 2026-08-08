@@ -23,23 +23,13 @@ class Master_mediator extends MY_Controller {
         $offset = ($page - 1) * $limit;
         $total  = $this->M_mediator->count_all($filter);
 
-        $this->load->library('pagination');
-        $this->pagination->initialize([
-            'base_url'         => site_url('admin/master_mediator') . '?' . http_build_query(array_filter($filter)) . '&',
-            'total_rows'       => $total,
-            'per_page'         => $limit,
-            'use_page_numbers' => TRUE,
-            'cur_tag_open'     => '<strong>',
-            'cur_tag_close'    => '</strong>',
-        ]);
-
         $this->render('admin/mediator/index', [
             'title'      => 'Kelola Mediator',
             'mediators'  => $this->M_mediator->get_all($filter, $limit, $offset),
             'total'      => $total,
             'filter'     => $filter,
             'page'       => $page,
-            'pagination' => $this->pagination->create_links(),
+            'pagination' => $this->paginate('admin/master_mediator', $total, $limit, $filter),
         ]);
     }
 
@@ -56,6 +46,8 @@ class Master_mediator extends MY_Controller {
                     'nama'          => $this->input->post('nama', true),
                     'jenis'         => $this->input->post('jenis'),
                     'no_sertifikat' => $this->input->post('no_sertifikat', true) ?: null,
+                    'email'         => $this->input->post('email', true) ?: null,
+                    'no_hp'         => $this->input->post('no_hp', true) ?: null,
                     'user_id'       => $user_id,
                     'is_active'     => $this->input->post('is_active') ? 1 : 0,
                 ]);
@@ -86,6 +78,8 @@ class Master_mediator extends MY_Controller {
                     'nama'          => $this->input->post('nama', true),
                     'jenis'         => $this->input->post('jenis'),
                     'no_sertifikat' => $this->input->post('no_sertifikat', true) ?: null,
+                    'email'         => $this->input->post('email', true) ?: null,
+                    'no_hp'         => $this->input->post('no_hp', true) ?: null,
                     'user_id'       => $user_id,
                     'is_active'     => $this->input->post('is_active') ? 1 : 0,
                 ]);

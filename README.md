@@ -42,17 +42,28 @@
 - Fitur **Penjadwalan Ulang (*Reschedule*)** dan **Pembatalan Sesi** yang otomatis memperbarui tampilan kalender.
 
 ### 3. 📲 Otomatisasi Broadcast Notifikasi (WA & Email):
+- Notifikasi penugasan baru dan pemberitahuan penggantian mediator langsung dikirim ke WhatsApp dan Email mediator terkait.
 - Notifikasi jadwal mediasi terisi langsung dikirim ke WhatsApp dan Email para pihak.
 - **Smart Filtering:** Pihak yang tidak memiliki Email/No HP terisi otomatis diabaikan tanpa menyebabkan error.
 - **Silent Failover:** Jika koneksi internet/gateway terputus, sistem menyimpan log error secara diam-diam dan menyediakan fitur **Kirim Ulang** 1-Klik di panel Admin.
 
-### 4. 📊 Laporan Rekapitulasi & Visual Analitik:
+### 4. 🔄 Penggantian Mediator & Jejak Audit (Audit Trail):
+- **Tabel Log Riwayat Penugasan (`perkara_mediator_log`):** Mencatat secara otomatis setiap riwayat penetapan dan penggantian mediator.
+- **Dual Notification:** Mediator lama otomatis menerima notifikasi pencabutan penugasan via WA/Email saat diganti, dan mediator baru menerima notifikasi penugasan.
+- **Timeline Riwayat Mediator:** Menampilkan riwayat lengkap mediator (aktif/digantikan) di halaman detail perkara PP, Mediator, dan Hakim.
+- **Proteksi Perkara Selesai:** Mencegah penggantian mediator jika perkara sudah memiliki Hasil Mediasi Final / Selesai.
+
+### 5. 📑 Seed Data Jenis Perkara (PERMA No. 1 Tahun 2016):
+- Dilengkapi dengan 16 seed data jenis perkara perdata Islam wajib mediasi (Perceraian, Hadhanah, Harta Bersama, Kewarisan, Ekonomi Syariah, Wakaf, Zakat, hingga Perlawanan/Verzet).
+
+### 6. 📊 Laporan Rekapitulasi & Visual Analitik:
 - Rumus kalkulasi keberhasilan mediasi sesuai standar Badilag MA:
   $$\text{Persentase Keberhasilan (\%)} = \frac{\text{Berhasil (Damai)} + \text{Berhasil Sebagian}}{\text{Total Mediasi Selesai}} \times 100\%$$
 - **Ekspor Excel (.xls):** Unduh berkas laporan rekapitulasi bulanan/tahunan bersih.
 - **Cetak PDF Resmi:** Format cetak dokumen ber-Kop Pengadilan Agama dan kolom tanda tangan pimpinan/panitera.
 
-### 5. 🛡️ Keamanan & Alat Administrator:
+### 7. 🛡️ Keamanan, Paginasi & Alat Administrator:
+- **Custom Pagination Builder:** Paginasi terpusat berbasis query string (`?page=N`) yang aman, presisi, dan dilengkapi tampilan informasi halaman & total data.
 - **Clean URL:** Penghilangan `index.php` dari URL menggunakan `.htaccess` dan mod_rewrite.
 - **1-Click DB Backup:** Fitur unduh cadangan database `.sql.zip` langsung dari GUI Admin.
 - **Reset Password Default:** Admin dapat me-reset password user yang lupa ke default (`123456`).

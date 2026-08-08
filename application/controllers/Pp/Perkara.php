@@ -11,6 +11,7 @@ class Perkara extends MY_Controller {
     public function __construct() {
         parent::__construct();
         $this->load->model(['M_perkara', 'M_mediator', 'M_jenis_perkara']);
+        $this->load->library(['EmailGateway', 'WaGateway']);
     }
 
     public function index() {
@@ -126,6 +127,10 @@ class Perkara extends MY_Controller {
                 'assigned_by' => $this->session->userdata('user_id'),
             ]);
 
+            // Kirim notifikasi ke mediator
+            $this->emailgateway->kirim_penugasan_mediator($perkara_id, $mediator_id);
+            $this->wagateway->kirim_penugasan_mediator($perkara_id, $mediator_id);
+
             $this->session->unset_userdata('new_perkara');
             $this->session->set_flashdata('success', 'Perkara dan penetapan mediator berhasil didaftarkan.');
             redirect('pp/monitor');
@@ -218,14 +223,43 @@ class Perkara extends MY_Controller {
                     'tgl_batas_mediasi' => $this->input->post('tgl_batas_mediasi'),
                 ]);
 
-                // Update Mediator Assignment
                 $new_mediator_id = $this->input->post('mediator_id');
-                $this->db->where('perkara_id', $id)->delete('perkara_mediator');
-                $this->db->insert('perkara_mediator', [
-                    'perkara_id'  => $id,
-                    'mediator_id' => $new_mediator_id,
-                    'assigned_by' => $this->session->userdata('user_id'),
-                ]);
+                $old_mediator_id = $perkara->mediator_id ?? null;
+
+                // Cek jika mediator berubah
+                if ($old_mediator_id && $new_mediator_id != $old_mediator_id) {
+                    $has_hasil = $this->db->get_where('hasil_mediasi', ['perkara_id' => $id])->row();
+                    if ($has_hasil || $perkara->status === 'selesai') {
+                        $this->session->set_flashdata('error', 'Mediator tidak dapat diganti karena perkara ini sudah memiliki Hasil Mediasi / Selesai.');
+                        redirect("pp/perkara/edit/{$id}");
+                        return;
+                    }
+
+                    // Assign mediator baru & catat log riwayat
+                    $this->M_perkara->assign_mediator([
+                        'perkara_id'  => $id,
+                        'mediator_id' => $new_mediator_id,
+                        'assigned_by' => $this->session->userdata('user_id'),
+                    ]);
+
+                    // Kirim notifikasi ke mediator LAMA (pemberhentian penugasan)
+                    $this->emailgateway->kirim_penggantian_mediator($id, $old_mediator_id);
+                    $this->wagateway->kirim_penggantian_mediator($id, $old_mediator_id);
+
+                    // Kirim notifikasi ke mediator BARU (penugasan baru)
+                    $this->emailgateway->kirim_penugasan_mediator($id, $new_mediator_id);
+                    $this->wagateway->kirim_penugasan_mediator($id, $new_mediator_id);
+                } elseif (!$old_mediator_id && $new_mediator_id) {
+                    // Penugasan pertama kali (jika sebelumnya belum ada)
+                    $this->M_perkara->assign_mediator([
+                        'perkara_id'  => $id,
+                        'mediator_id' => $new_mediator_id,
+                        'assigned_by' => $this->session->userdata('user_id'),
+                    ]);
+
+                    $this->emailgateway->kirim_penugasan_mediator($id, $new_mediator_id);
+                    $this->wagateway->kirim_penugasan_mediator($id, $new_mediator_id);
+                }
 
                 // Re-sync Data Pihak
                 $this->db->where('perkara_id', $id)->delete('perkara_pihak');

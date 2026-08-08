@@ -52,23 +52,13 @@ class Notifikasi_log extends MY_Controller {
 
         $logs = $this->db->order_by('l.created_at', 'DESC')->limit($limit, $offset)->get()->result();
 
-        $this->load->library('pagination');
-        $this->pagination->initialize([
-            'base_url'         => site_url('admin/notifikasi_log') . '?' . http_build_query(array_filter($filter)) . '&',
-            'total_rows'       => $total,
-            'per_page'         => $limit,
-            'use_page_numbers' => TRUE,
-            'cur_tag_open'     => '<strong>',
-            'cur_tag_close'    => '</strong>',
-        ]);
-
         $this->render('admin/notifikasi_log/index', [
             'title'      => 'Riwayat Log Notifikasi',
             'logs'       => $logs,
             'total'      => $total,
             'filter'     => $filter,
             'page'       => $page,
-            'pagination' => $this->pagination->create_links(),
+            'pagination' => $this->paginate('admin/notifikasi_log', $total, $limit, $filter),
         ]);
     }
 

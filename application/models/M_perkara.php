@@ -20,8 +20,58 @@ class M_perkara extends CI_Model {
     }
 
     public function assign_mediator($data) {
-        return $this->db->insert('perkara_mediator', $data);
+        $perkara_id  = $data['perkara_id'];
+        $mediator_id = $data['mediator_id'];
+        $assigned_by = $data['assigned_by'];
+
+        $existing = $this->db->get_where('perkara_mediator', ['perkara_id' => $perkara_id])->row();
+
+        if ($existing) {
+            if ($existing->mediator_id == $mediator_id) {
+                return true; // No change
+            }
+
+            // Update log mediator lama
+            $this->db->where('perkara_id', $perkara_id)
+                     ->where('tgl_diganti IS NULL')
+                     ->update('perkara_mediator_log', [
+                         'tgl_diganti'  => date('Y-m-d H:i:s'),
+                         'diganti_oleh' => $assigned_by
+                     ]);
+
+            // Hapus aktif lama
+            $this->db->where('perkara_id', $perkara_id)->delete('perkara_mediator');
+        }
+
+        // Insert aktif baru
+        $this->db->insert('perkara_mediator', [
+            'perkara_id'  => $perkara_id,
+            'mediator_id' => $mediator_id,
+            'assigned_by' => $assigned_by,
+        ]);
+
+        // Record log penugasan baru
+        $this->db->insert('perkara_mediator_log', [
+            'perkara_id'  => $perkara_id,
+            'mediator_id' => $mediator_id,
+            'assigned_by' => $assigned_by,
+            'tgl_assign'  => date('Y-m-d H:i:s'),
+        ]);
+
+        return true;
     }
+
+    public function get_riwayat_mediator($perkara_id) {
+        $this->db->select('pml.*, m.nama as nama_mediator, m.jenis as jenis_mediator, u1.nama as nama_assigned_by, u2.nama as nama_diganti_oleh');
+        $this->db->from('perkara_mediator_log pml');
+        $this->db->join('mediators m', 'm.id = pml.mediator_id', 'left');
+        $this->db->join('users u1', 'u1.id = pml.assigned_by', 'left');
+        $this->db->join('users u2', 'u2.id = pml.diganti_oleh', 'left');
+        $this->db->where('pml.perkara_id', $perkara_id);
+        $this->db->order_by('pml.id', 'ASC');
+        return $this->db->get()->result();
+    }
+
 
     public function get_pihak($perkara_id) {
         return $this->db->where('perkara_id', $perkara_id)->order_by('jenis, urutan')->get('perkara_pihak')->result();

@@ -31,23 +31,13 @@ class Monitor extends MY_Controller {
             ? $this->M_perkara->get_all($filter, $limit, $offset)
             : $this->M_perkara->get_all_by_pp($user_id, $filter, $limit, $offset);
 
-        $this->load->library('pagination');
-        $this->pagination->initialize([
-            'base_url'         => site_url('pp/monitor') . '?' . http_build_query(array_filter($filter)) . '&',
-            'total_rows'       => $total,
-            'per_page'         => $limit,
-            'use_page_numbers' => TRUE,
-            'cur_tag_open'     => '<strong>',
-            'cur_tag_close'    => '</strong>',
-        ]);
-
         $this->render('pp/monitor/index', [
             'title'      => 'Monitor Perkara Mediasi',
             'perkaras'   => $perkaras,
             'total'      => $total,
             'filter'     => $filter,
             'page'       => $page,
-            'pagination' => $this->pagination->create_links(),
+            'pagination' => $this->paginate('pp/monitor', $total, $limit, $filter),
         ]);
     }
 
@@ -59,12 +49,15 @@ class Monitor extends MY_Controller {
         $jadwal = $this->M_jadwal->get_by_perkara($id);
         $hasil  = $this->M_hasil->get_by_perkara($id);
 
+        $riwayat_mediator = $this->M_perkara->get_riwayat_mediator($id);
+
         $this->render('pp/monitor/detail', [
-            'title'   => "Detail Perkara {$perkara->nomor_perkara}",
-            'perkara' => $perkara,
-            'pihak'   => $pihak,
-            'jadwal'  => $jadwal,
-            'hasil'   => $hasil,
+            'title'            => "Detail Perkara {$perkara->nomor_perkara}",
+            'perkara'          => $perkara,
+            'pihak'            => $pihak,
+            'jadwal'           => $jadwal,
+            'hasil'            => $hasil,
+            'riwayat_mediator' => $riwayat_mediator,
         ]);
     }
 

@@ -23,23 +23,13 @@ class Master_user extends MY_Controller {
         $offset = ($page - 1) * $limit;
         $total  = $this->M_user->count_all($filter);
 
-        $this->load->library('pagination');
-        $this->pagination->initialize([
-            'base_url'         => site_url('admin/master_user') . '?' . http_build_query(array_filter($filter)) . '&',
-            'total_rows'       => $total,
-            'per_page'         => $limit,
-            'use_page_numbers' => TRUE,
-            'cur_tag_open'     => '<strong>',
-            'cur_tag_close'    => '</strong>',
-        ]);
-
         $this->render('admin/user/index', [
             'title'      => 'Kelola User',
             'users'      => $this->M_user->get_all($filter, $limit, $offset),
             'total'      => $total,
             'filter'     => $filter,
             'page'       => $page,
-            'pagination' => $this->pagination->create_links(),
+            'pagination' => $this->paginate('admin/master_user', $total, $limit, $filter),
         ]);
     }
 

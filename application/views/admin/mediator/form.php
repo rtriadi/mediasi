@@ -40,6 +40,30 @@
                     placeholder="Contoh: 123/SERT-MED/MA/2022">
             </div>
 
+            <!-- Kontak: Email & No HP -->
+            <div class="mb-5 p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                <p class="text-xs font-bold text-blue-700 uppercase tracking-wider mb-3">
+                    <i class="fa-solid fa-bell mr-1"></i> Kontak untuk Notifikasi Penugasan
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                        <input type="email" id="email" name="email"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            value="<?= htmlspecialchars($mediator_data->email ?? set_value('email')) ?>"
+                            placeholder="mediator@contoh.com">
+                    </div>
+                    <div>
+                        <label for="no_hp" class="block text-sm font-medium text-gray-700 mb-1.5">Nomor HP / WhatsApp</label>
+                        <input type="text" id="no_hp" name="no_hp"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            value="<?= htmlspecialchars($mediator_data->no_hp ?? set_value('no_hp')) ?>"
+                            placeholder="Contoh: 0812xxxxxxxx">
+                    </div>
+                </div>
+                <p class="text-xs text-blue-600 mt-2">Digunakan untuk notifikasi otomatis saat mediator mendapat penugasan perkara.</p>
+            </div>
+
             <!-- Link Akun User -->
             <div class="mb-5">
                 <label for="user_id" class="block text-sm font-medium text-gray-700 mb-1.5">Hubungkan ke Akun User</label>

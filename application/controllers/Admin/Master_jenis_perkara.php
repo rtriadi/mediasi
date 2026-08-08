@@ -22,23 +22,13 @@ class Master_jenis_perkara extends MY_Controller {
         $total      = $this->M_jenis_perkara->count_all($filter);
         $jenis_list = $this->M_jenis_perkara->get_paginated($filter, $limit, $offset);
 
-        $this->load->library('pagination');
-        $this->pagination->initialize([
-            'base_url'         => site_url('admin/master_jenis_perkara') . '?' . http_build_query(array_filter($filter)) . '&',
-            'total_rows'       => $total,
-            'per_page'         => $limit,
-            'use_page_numbers' => TRUE,
-            'cur_tag_open'     => '<strong class="px-3 py-1 bg-blue-600 text-white rounded-lg font-bold">',
-            'cur_tag_close'    => '</strong>',
-        ]);
-
         $this->render('admin/jenis_perkara/index', [
             'title'      => 'Kelola Jenis Perkara',
             'jenis_list' => $jenis_list,
             'total'      => $total,
             'filter'     => $filter,
             'page'       => $page,
-            'pagination' => $this->pagination->create_links(),
+            'pagination' => $this->paginate('admin/master_jenis_perkara', $total, $limit, $filter),
         ]);
     }
 

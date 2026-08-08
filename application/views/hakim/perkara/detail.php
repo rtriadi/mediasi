@@ -90,6 +90,39 @@
                     <?php endif; ?>
                 <?php endforeach; ?>
             </div>
+
+            <!-- Riwayat Penugasan Mediator -->
+            <?php if (!empty($riwayat_mediator) && count($riwayat_mediator) > 0): ?>
+            <div class="mt-6 pt-5 border-t border-gray-100">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Riwayat Mediator</h4>
+                    <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium"><?= count($riwayat_mediator) ?> Penugasan</span>
+                </div>
+                <div class="space-y-2.5 text-xs">
+                    <?php foreach ($riwayat_mediator as $rm): ?>
+                    <?php $is_active = is_null($rm->tgl_diganti); ?>
+                    <div class="p-2.5 rounded-lg border <?= $is_active ? 'border-blue-200 bg-blue-50/40' : 'border-gray-200 bg-gray-50/60 opacity-80' ?>">
+                        <div class="flex items-center justify-between font-semibold">
+                            <span class="text-gray-900"><?= htmlspecialchars($rm->nama_mediator) ?></span>
+                            <?php if ($is_active): ?>
+                                <span class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold">Aktif</span>
+                            <?php else: ?>
+                                <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-semibold">Digantikan</span>
+                            <?php endif; ?>
+                        </div>
+                        <p class="text-[11px] text-gray-500 mt-1">
+                            🕒 Assign: <?= date('d/m/Y H:i', strtotime($rm->tgl_assign)) ?>
+                        </p>
+                        <?php if (!$is_active && $rm->tgl_diganti): ?>
+                        <p class="text-[11px] text-red-600 mt-0.5 font-medium">
+                            🛑 Diganti: <?= date('d/m/Y H:i', strtotime($rm->tgl_diganti)) ?> <?= $rm->nama_diganti_oleh ? '('.htmlspecialchars($rm->nama_diganti_oleh).')' : '' ?>
+                        </p>
+                        <?php endif; ?>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
         </div>
 
         <!-- Col 2: Riwayat Sesi & Laporan -->

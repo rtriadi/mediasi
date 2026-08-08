@@ -32,16 +32,6 @@ class Dashboard extends MY_Controller {
         $total   = $this->M_statistik->count_detail($filter);
         $detail  = $this->M_statistik->get_detail($filter, $limit, $offset);
 
-        $this->load->library('pagination');
-        $this->pagination->initialize([
-            'base_url'         => site_url('pimpinan/dashboard') . '?' . http_build_query(array_filter($filter)) . '&',
-            'total_rows'       => $total,
-            'per_page'         => $limit,
-            'use_page_numbers' => TRUE,
-            'cur_tag_open'     => '<strong>',
-            'cur_tag_close'    => '</strong>',
-        ]);
-
         $mediators = $this->M_mediator->get_aktif();
 
         // Data Analitik untuk 3 grafik baru
@@ -57,7 +47,7 @@ class Dashboard extends MY_Controller {
             'total'             => $total,
             'filter'            => $filter,
             'page'              => $page,
-            'pagination'        => $this->pagination->create_links(),
+            'pagination'        => $this->paginate('pimpinan/dashboard', $total, $limit, $filter),
             'mediators'         => $mediators,
             'trend_bulanan'     => $trend_bulanan,
             'kinerja_mediator'  => $kinerja_mediator,

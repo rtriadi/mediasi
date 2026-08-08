@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // Badge helper
 function role_badge($role) {
     $map = [
@@ -123,8 +123,9 @@ function role_badge($role) {
     </div>
 
     <?php if ($pagination): ?>
-    <div class="px-4 py-3 border-t border-slate-100 text-xs text-slate-500">
-        <?= $pagination ?>
+    <div class="px-4 py-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+        <p class="text-xs text-slate-400">Halaman <strong class="text-slate-600"><?= $page ?></strong> &bull; Total <strong class="text-slate-600"><?= number_format($total) ?></strong> data</p>
+        <div class="text-xs"><?= $pagination ?></div>
     </div>
     <?php endif; ?>
 </div>

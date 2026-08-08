@@ -1,4 +1,4 @@
-<!-- Header -->
+﻿<!-- Header -->
 <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
     <div>
         <h2 class="text-2xl font-extrabold font-heading text-slate-900 tracking-tight">Kelola Mediator</h2>
@@ -51,6 +51,7 @@
                     <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">Nama Mediator</th>
                     <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">Jenis</th>
                     <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">No. Sertifikat</th>
+                    <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">Email / HP</th>
                     <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">Akun User</th>
                     <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">Status</th>
                     <th class="text-right px-4 py-3.5 font-bold uppercase tracking-wider">Aksi</th>
@@ -58,7 +59,7 @@
             </thead>
             <tbody class="divide-y divide-slate-100">
                 <?php if (empty($mediators)): ?>
-                <tr><td colspan="7" class="px-4 py-12 text-center text-slate-400 font-medium">Tidak ada data mediator ditemukan.</td></tr>
+                <tr><td colspan="8" class="px-4 py-12 text-center text-slate-400 font-medium">Tidak ada data mediator ditemukan.</td></tr>
                 <?php else: ?>
                 <?php $no = (isset($page) ? ($page-1)*10 : 0) + 1; foreach ($mediators as $m): ?>
                 <tr class="hover:bg-slate-50/80 transition-colors">
@@ -76,6 +77,20 @@
                         <?php endif; ?>
                     </td>
                     <td class="px-4 py-3.5 text-slate-600 font-mono"><?= htmlspecialchars($m->no_sertifikat ?: '—') ?></td>
+                    <td class="px-4 py-3.5">
+                        <?php if (!empty($m->email) || !empty($m->no_hp)): ?>
+                        <div class="flex flex-col gap-0.5">
+                            <?php if (!empty($m->email)): ?>
+                            <span class="flex items-center gap-1 text-slate-600"><i class="fa-solid fa-envelope text-[10px] text-blue-400"></i> <?= htmlspecialchars($m->email) ?></span>
+                            <?php endif; ?>
+                            <?php if (!empty($m->no_hp)): ?>
+                            <span class="flex items-center gap-1 text-slate-600"><i class="fa-brands fa-whatsapp text-[10px] text-emerald-500"></i> <?= htmlspecialchars($m->no_hp) ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <?php else: ?>
+                        <span class="text-slate-400 italic">—</span>
+                        <?php endif; ?>
+                    </td>
                     <td class="px-4 py-3.5 text-slate-600">
                         <?= $m->username ? '<span class="font-mono text-blue-600">@'.htmlspecialchars($m->username).'</span>' : '<span class="text-slate-400 italic">Tanpa akun</span>' ?>
                     </td>
@@ -113,8 +128,9 @@
     </div>
 
     <?php if ($pagination): ?>
-    <div class="px-4 py-3 border-t border-slate-100 text-xs text-slate-500">
-        <?= $pagination ?>
+    <div class="px-4 py-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+        <p class="text-xs text-slate-400">Halaman <strong class="text-slate-600"><?= $page ?></strong> &bull; Total <strong class="text-slate-600"><?= number_format($total) ?></strong> data</p>
+        <div class="text-xs"><?= $pagination ?></div>
     </div>
     <?php endif; ?>
 </div>

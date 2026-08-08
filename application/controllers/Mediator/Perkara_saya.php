@@ -44,23 +44,13 @@ class Perkara_saya extends MY_Controller {
         $total    = $this->M_perkara->count_by_mediator($mediator_id, $filter);
         $perkaras = $this->M_perkara->get_by_mediator($mediator_id, $filter, $limit, $offset);
 
-        $this->load->library('pagination');
-        $this->pagination->initialize([
-            'base_url'         => site_url('mediator/perkara_saya') . '?' . http_build_query(array_filter($filter)) . '&',
-            'total_rows'       => $total,
-            'per_page'         => $limit,
-            'use_page_numbers' => TRUE,
-            'cur_tag_open'     => '<strong>',
-            'cur_tag_close'    => '</strong>',
-        ]);
-
         $this->render('mediator/perkara/index', [
             'title'      => 'Perkara Mediasi Saya',
             'perkaras'   => $perkaras,
             'total'      => $total,
             'filter'     => $filter,
             'page'       => $page,
-            'pagination' => $this->pagination->create_links(),
+            'pagination' => $this->paginate('mediator/perkara_saya', $total, $limit, $filter),
         ]);
     }
 
@@ -77,12 +67,15 @@ class Perkara_saya extends MY_Controller {
         $jadwal = $this->M_jadwal->get_by_perkara($id);
         $hasil  = $this->M_hasil->get_by_perkara($id);
 
+        $riwayat_mediator = $this->M_perkara->get_riwayat_mediator($id);
+
         $this->render('mediator/perkara/detail', [
-            'title'   => "Detail Perkara {$perkara->nomor_perkara}",
-            'perkara' => $perkara,
-            'pihak'   => $pihak,
-            'jadwal'  => $jadwal,
-            'hasil'   => $hasil,
+            'title'            => "Detail Perkara {$perkara->nomor_perkara}",
+            'perkara'          => $perkara,
+            'pihak'            => $pihak,
+            'jadwal'           => $jadwal,
+            'hasil'            => $hasil,
+            'riwayat_mediator' => $riwayat_mediator,
         ]);
     }
 }

@@ -22,23 +22,13 @@ class Master_ruangan extends MY_Controller {
         $total    = $this->M_ruangan->count_all($filter);
         $ruangans = $this->M_ruangan->get_paginated($filter, $limit, $offset);
 
-        $this->load->library('pagination');
-        $this->pagination->initialize([
-            'base_url'         => site_url('admin/master_ruangan') . '?' . http_build_query(array_filter($filter)) . '&',
-            'total_rows'       => $total,
-            'per_page'         => $limit,
-            'use_page_numbers' => TRUE,
-            'cur_tag_open'     => '<strong class="px-3 py-1 bg-blue-600 text-white rounded-lg font-bold">',
-            'cur_tag_close'    => '</strong>',
-        ]);
-
         $this->render('admin/ruangan/index', [
             'title'      => 'Kelola Ruangan Mediasi',
             'ruangans'   => $ruangans,
             'total'      => $total,
             'filter'     => $filter,
             'page'       => $page,
-            'pagination' => $this->pagination->create_links(),
+            'pagination' => $this->paginate('admin/master_ruangan', $total, $limit, $filter),
         ]);
     }
 

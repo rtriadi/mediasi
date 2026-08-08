@@ -234,4 +234,99 @@ class EmailGateway {
             }
         }
     }
+
+    /**
+     * Kirim notifikasi penugasan perkara ke email mediator.
+     */
+    public function kirim_penugasan_mediator($perkara_id, $mediator_id) {
+        if (!$this->is_enabled()) return;
+
+        $this->CI->load->model(['M_perkara', 'M_mediator']);
+        $perkara  = $this->CI->M_perkara->get_by_id($perkara_id);
+        $mediator = $this->CI->M_mediator->get_by_id($mediator_id);
+
+        if (!$perkara || !$mediator) return;
+
+        $email = trim($mediator->email ?? '');
+        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) return;
+
+        $satker   = get_app_setting('nama_satker', 'Pengadilan Agama Gorontalo');
+        $app_name = get_app_setting('nama_aplikasi', 'SIPO-MEDIASI');
+        $tgl_batas = isset($perkara->tgl_batas_mediasi) ? tgl_indo($perkara->tgl_batas_mediasi, true) : '-';
+        $login_url = site_url('auth/login');
+
+        $subject = "[PENUGASAN MEDIASI] Perkara No. {$perkara->nomor_perkara} - {$satker}";
+
+        $html_body = "
+        <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;'>
+            <div style='background-color: #0f766e; color: #ffffff; padding: 15px 20px; border-radius: 8px 8px 0 0;'>
+                <h2 style='margin: 0; font-size: 18px;'>🧑‍⚖️ PENUGASAN MEDIASI</h2>
+                <p style='margin: 5px 0 0 0; font-size: 12px; color: #99f6e4;'>{$satker} — {$app_name}</p>
+            </div>
+            <div style='padding: 20px; background-color: #ffffff;'>
+                <p>Yth. <strong>" . htmlspecialchars($mediator->nama) . "</strong>,</p>
+                <p>Anda telah <strong>DITUGASKAN</strong> sebagai Mediator untuk perkara berikut. Harap segera membuat jadwal sesi mediasi pertama.</p>
+                <table style='width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 13px;'>
+                    <tr><td style='padding: 8px; border-bottom: 1px solid #f1f5f9; color: #64748b; width: 160px;'>Nomor Perkara</td><td style='padding: 8px; border-bottom: 1px solid #f1f5f9; font-weight: bold;'>{$perkara->nomor_perkara}</td></tr>
+                    <tr><td style='padding: 8px; border-bottom: 1px solid #f1f5f9; color: #64748b;'>Jenis Perkara</td><td style='padding: 8px; border-bottom: 1px solid #f1f5f9;'>" . htmlspecialchars($perkara->jenis_perkara ?? '-') . "</td></tr>
+                    <tr><td style='padding: 8px; border-bottom: 1px solid #f1f5f9; color: #64748b;'>Hakim</td><td style='padding: 8px; border-bottom: 1px solid #f1f5f9;'>" . htmlspecialchars($perkara->nama_hakim ?? '-') . "</td></tr>
+                    <tr><td style='padding: 8px; border-bottom: 1px solid #f1f5f9; color: #64748b;'>Batas Waktu Mediasi</td><td style='padding: 8px; border-bottom: 1px solid #f1f5f9; font-weight: bold; color: #dc2626;'>{$tgl_batas}</td></tr>
+                </table>
+                <div style='margin: 25px 0 15px 0; text-align: center;'>
+                    <a href='{$login_url}' style='display: inline-block; background-color: #0f766e; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 10px; font-weight: bold; font-size: 13px;'>
+                        📅 Login & Buat Jadwal Mediasi
+                    </a>
+                </div>
+                <hr style='border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;' />
+                <p style='font-size: 11px; color: #94a3b8; margin: 0;'>Pesan ini dikirimkan secara otomatis oleh Sistem Informasi Mediasi {$satker}.</p>
+            </div>
+        </div>
+        ";
+
+        $this->kirim($email, $subject, $html_body, $perkara_id);
+    }
+
+    /**
+     * Kirim notifikasi pemberhentian/penggantian penugasan perkara ke mediator lama.
+     */
+    public function kirim_penggantian_mediator($perkara_id, $old_mediator_id) {
+        if (!$this->is_enabled()) return;
+
+        $this->CI->load->model(['M_perkara', 'M_mediator']);
+        $perkara  = $this->CI->M_perkara->get_by_id($perkara_id);
+        $mediator = $this->CI->M_mediator->get_by_id($old_mediator_id);
+
+        if (!$perkara || !$mediator) return;
+
+        $email = trim($mediator->email ?? '');
+        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) return;
+
+        $satker   = get_app_setting('nama_satker', 'Pengadilan Agama Gorontalo');
+        $app_name = get_app_setting('nama_aplikasi', 'SIPO-MEDIASI');
+        $subject  = "[PENGGANTIAN MEDIASI] Perkara No. {$perkara->nomor_perkara} - {$satker}";
+
+        $html_body = "
+        <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;'>
+            <div style='background-color: #b91c1c; color: #ffffff; padding: 15px 20px; border-radius: 8px 8px 0 0;'>
+                <h2 style='margin: 0; font-size: 18px;'>⚠️ PENGGANTIAN PENUGASAN MEDIASI</h2>
+                <p style='margin: 5px 0 0 0; font-size: 12px; color: #fca5a5;'>{$satker} — {$app_name}</p>
+            </div>
+            <div style='padding: 20px; background-color: #ffffff;'>
+                <p>Yth. <strong>" . htmlspecialchars($mediator->nama) . "</strong>,</p>
+                <p>Diberitahukan bahwa penugasan Anda sebagai Mediator untuk perkara berikut telah <strong>DIGANTIKAN / DICABUT</strong> oleh Panitera Pengganti (PP) / Admin.</p>
+                <table style='width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 13px;'>
+                    <tr><td style='padding: 8px; border-bottom: 1px solid #f1f5f9; color: #64748b; width: 160px;'>Nomor Perkara</td><td style='padding: 8px; border-bottom: 1px solid #f1f5f9; font-weight: bold;'>{$perkara->nomor_perkara}</td></tr>
+                    <tr><td style='padding: 8px; border-bottom: 1px solid #f1f5f9; color: #64748b;'>Jenis Perkara</td><td style='padding: 8px; border-bottom: 1px solid #f1f5f9;'>" . htmlspecialchars($perkara->jenis_perkara ?? '-') . "</td></tr>
+                    <tr><td style='padding: 8px; border-bottom: 1px solid #f1f5f9; color: #64748b;'>Status Penugasan</td><td style='padding: 8px; border-bottom: 1px solid #f1f5f9; font-weight: bold; color: #dc2626;'>Dioperkan ke Mediator Lain</td></tr>
+                </table>
+                <p style='font-size: 12px; color: #64748b;'>Perkara ini sudah tidak muncul di daftar penugasan aktif Anda. Terima kasih atas dedikasi Anda.</p>
+                <hr style='border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;' />
+                <p style='font-size: 11px; color: #94a3b8; margin: 0;'>Pesan ini dikirimkan secara otomatis oleh Sistem Informasi Mediasi {$satker}.</p>
+            </div>
+        </div>
+        ";
+
+        $this->kirim($email, $subject, $html_body, $perkara_id);
+    }
 }
+

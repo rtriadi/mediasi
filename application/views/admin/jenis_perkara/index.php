@@ -1,4 +1,4 @@
-<!-- Header -->
+﻿<!-- Header -->
 <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
     <div>
         <h2 class="text-2xl font-extrabold font-heading text-slate-900 tracking-tight">Kelola Jenis Perkara</h2>
@@ -96,9 +96,10 @@
         </table>
     </div>
 
-    <?php if (isset($pagination) && $pagination): ?>
-    <div class="px-4 py-3 border-t border-slate-100 text-xs text-slate-500">
-        <?= $pagination ?>
+    <?php if ($pagination): ?>
+    <div class="px-4 py-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+        <p class="text-xs text-slate-400">Halaman <strong class="text-slate-600"><?= $page ?></strong> &bull; Total <strong class="text-slate-600"><?= number_format($total) ?></strong> data</p>
+        <div class="text-xs"><?= $pagination ?></div>
     </div>
     <?php endif; ?>
 </div>

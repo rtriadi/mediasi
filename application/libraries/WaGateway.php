@@ -196,4 +196,66 @@ class WaGateway {
             }
         }
     }
+
+    /**
+     * Kirim notifikasi WA penugasan perkara ke mediator.
+     */
+    public function kirim_penugasan_mediator($perkara_id, $mediator_id) {
+        if (!$this->is_enabled()) return;
+
+        $this->CI->load->model(['M_perkara', 'M_mediator']);
+        $perkara  = $this->CI->M_perkara->get_by_id($perkara_id);
+        $mediator = $this->CI->M_mediator->get_by_id($mediator_id);
+
+        if (!$perkara || !$mediator) return;
+
+        $no_hp = trim($mediator->no_hp ?? '');
+        if (empty($no_hp)) return;
+
+        $satker    = get_app_setting('nama_satker', 'Pengadilan Agama Gorontalo');
+        $tgl_batas = isset($perkara->tgl_batas_mediasi) ? tgl_indo($perkara->tgl_batas_mediasi, true) : '-';
+        $login_url = site_url('auth/login');
+
+        $pesan = "🧑‍⚖️ *PENUGASAN MEDIASI " . strtoupper($satker) . "*\n\n" .
+                 "Yth. *" . $mediator->nama . "*,\n" .
+                 "Anda telah *DITUGASKAN* sebagai Mediator untuk perkara berikut. Harap segera membuat jadwal sesi mediasi pertama.\n\n" .
+                 "• Nomor Perkara  : *{$perkara->nomor_perkara}*\n" .
+                 "• Jenis Perkara  : " . ($perkara->jenis_perkara ?? '-') . "\n" .
+                 "• Hakim          : " . ($perkara->nama_hakim ?? '-') . "\n" .
+                 "• Batas Mediasi  : *{$tgl_batas}*\n\n" .
+                 "🔗 *Login untuk buat jadwal:*\n{$login_url}\n\n" .
+                 "Terima Kasih.\n---\n*{$satker}*";
+
+        $this->kirim($no_hp, $pesan, $perkara_id);
+    }
+
+    /**
+     * Kirim notifikasi WA penugasan dicabut / digantikan ke mediator lama.
+     */
+    public function kirim_penggantian_mediator($perkara_id, $old_mediator_id) {
+        if (!$this->is_enabled()) return;
+
+        $this->CI->load->model(['M_perkara', 'M_mediator']);
+        $perkara  = $this->CI->M_perkara->get_by_id($perkara_id);
+        $mediator = $this->CI->M_mediator->get_by_id($old_mediator_id);
+
+        if (!$perkara || !$mediator) return;
+
+        $no_hp = trim($mediator->no_hp ?? '');
+        if (empty($no_hp)) return;
+
+        $satker = get_app_setting('nama_satker', 'Pengadilan Agama Gorontalo');
+
+        $pesan = "⚠️ *PENGGANTIAN MEDIASI " . strtoupper($satker) . "*\n\n" .
+                 "Yth. *" . $mediator->nama . "*,\n" .
+                 "Diberitahukan bahwa penugasan Anda sebagai Mediator untuk perkara berikut telah *DIGANTIKAN / DICABUT* oleh Panitera Pengganti (PP) / Admin:\n\n" .
+                 "• Nomor Perkara  : *{$perkara->nomor_perkara}*\n" .
+                 "• Jenis Perkara  : " . ($perkara->jenis_perkara ?? '-') . "\n" .
+                 "• Status         : *Dioperkan ke Mediator Lain*\n\n" .
+                 "Perkara ini sudah tidak muncul di daftar penugasan aktif Anda. Terima kasih atas dedikasi Anda.\n\n" .
+                 "Terima Kasih.\n---\n*{$satker}*";
+
+        $this->kirim($no_hp, $pesan, $perkara_id);
+    }
 }
+
