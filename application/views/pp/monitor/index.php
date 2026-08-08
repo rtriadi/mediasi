@@ -1,4 +1,4 @@
-﻿<!-- Header -->
+<!-- Header -->
 <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
     <div>
         <h2 class="text-2xl font-extrabold font-heading text-slate-900 tracking-tight">Monitor Perkara Mediasi</h2>
@@ -94,11 +94,13 @@
                     </td>
                     <td class="px-4 py-3.5 text-right">
                         <div class="flex items-center justify-end gap-1.5">
+                            <?php if ($p->status !== 'selesai' && empty($p->hasil)): ?>
                             <a href="<?= site_url("pp/perkara/edit/{$p->id}") ?>"
                                 class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-2.5 py-1 rounded-lg transition-colors">
                                 <i class="fa-solid fa-pen-to-square text-[10px]"></i>
                                 <span>Edit</span>
                             </a>
+                            <?php endif; ?>
                             <a href="<?= site_url("pp/monitor/detail/{$p->id}") ?>"
                                 class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2.5 py-1 rounded-lg transition-colors">
                                 <span>Detail</span>
