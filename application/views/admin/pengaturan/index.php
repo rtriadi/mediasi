@@ -339,7 +339,7 @@ $wa_active    = get_app_setting('wa_notif_active', '0') === '1';
                         <div>
                             <label class="block text-[11px] text-slate-400 mb-1">Linux / cPanel Crontab Command:</label>
                             <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 font-mono text-xs text-emerald-400 flex items-center justify-between overflow-x-auto">
-                                <code id="crontab-string">*/<?= $interval_menit ?> * * * * php <?= FCPATH ?>cronjob_api_sync.php</code>
+                                <code id="crontab-string">*/<?= $interval_menit ?> * * * * php <?= str_replace('\\', '/', FCPATH) ?>cronjob_api_sync.php</code>
                                 <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('crontab-string').innerText); alert('Command Crontab disalin!')" 
                                     class="text-slate-400 hover:text-white text-xs ml-2 px-2 py-1 bg-slate-800 rounded-md hover:bg-slate-700">
                                     <i class="fa-solid fa-copy"></i>
@@ -350,7 +350,7 @@ $wa_active    = get_app_setting('wa_notif_active', '0') === '1';
                         <div>
                             <label class="block text-[11px] text-slate-400 mb-1">Windows Task Scheduler Command:</label>
                             <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 font-mono text-xs text-blue-300 flex items-center justify-between overflow-x-auto">
-                                <code id="windows-cron-string">C:\xampp\php\php.exe "<?= FCPATH ?>cronjob_api_sync.php"</code>
+                                <code id="windows-cron-string">C:\xampp\php\php.exe "<?= str_replace('\\', '/', FCPATH) ?>cronjob_api_sync.php"</code>
                                 <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('windows-cron-string').innerText); alert('Command Windows disalin!')" 
                                     class="text-slate-400 hover:text-white text-xs ml-2 px-2 py-1 bg-slate-800 rounded-md hover:bg-slate-700">
                                     <i class="fa-solid fa-copy"></i>
@@ -479,7 +479,7 @@ $wa_active    = get_app_setting('wa_notif_active', '0') === '1';
 function updateCronHelper(val) {
     const min = Math.max(1, parseInt(val) || 15);
     document.getElementById('cron-interval-badge').innerText = min;
-    document.getElementById('crontab-string').innerText = '*/' + min + ' * * * * php <?= FCPATH ?>cronjob_api_sync.php';
+    document.getElementById('crontab-string').innerText = '*/' + min + ' * * * * php <?= str_replace('\\', '/', FCPATH) ?>cronjob_api_sync.php';
 }
 
 function testApiConnection(e) {
