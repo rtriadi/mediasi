@@ -196,7 +196,7 @@
                 </div>
                 <div>
                     <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 block">Hasil Akhir Mediasi</span>
-                    <h4 class="text-xl font-extrabold capitalize text-emerald-900 font-heading mt-0.5"><?= str_replace('_', ' ', $hasil->hasil) ?></h4>
+                    <h4 class="text-xl font-extrabold capitalize text-emerald-900 font-heading mt-0.5"><?= str_replace('_', ' ', $hasil->status_hasil) ?></h4>
                     <p class="text-xs text-emerald-800 mt-1">Proses mediasi perkara ini telah selesai pada tanggal <?= tgl_indo($hasil->tgl_hasil, false) ?>.</p>
                 </div>
             </div>

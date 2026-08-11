@@ -22,41 +22,35 @@ class M_perkara extends CI_Model {
     public function assign_mediator($data) {
         $perkara_id  = $data['perkara_id'];
         $mediator_id = $data['mediator_id'];
-        $assigned_by = $data['assigned_by'];
+        $assigned_by = $data['assigned_by'] ?? null;
 
-        $existing = $this->db->get_where('perkara_mediator', ['perkara_id' => $perkara_id])->row();
+        // Nonaktifkan penugasan mediator yang sedang aktif (histori)
+        $this->db->where('perkara_id', $perkara_id)
+                 ->where('is_active', 1)
+                 ->update('perkara_mediator', [
+                     'is_active'          => 0,
+                     'alasan_penggantian' => $data['alasan_penggantian'] ?? null,
+                 ]);
 
-        if ($existing) {
-            if ($existing->mediator_id == $mediator_id) {
-                return true; // No change
-            }
-
-            // Update log mediator lama
-            $this->db->where('perkara_id', $perkara_id)
-                     ->where('tgl_diganti IS NULL')
-                     ->update('perkara_mediator_log', [
-                         'tgl_diganti'  => date('Y-m-d H:i:s'),
-                         'diganti_oleh' => $assigned_by
-                     ]);
-
-            // Hapus aktif lama
-            $this->db->where('perkara_id', $perkara_id)->delete('perkara_mediator');
-        }
-
-        // Insert aktif baru
+        // Insert penugasan baru
         $this->db->insert('perkara_mediator', [
-            'perkara_id'  => $perkara_id,
-            'mediator_id' => $mediator_id,
-            'assigned_by' => $assigned_by,
+            'perkara_id'    => $perkara_id,
+            'mediator_id'   => $mediator_id,
+            'tgl_penetapan' => date('Y-m-d'),
+            'status_mediator' => 'N',
+            'is_active'     => 1,
         ]);
 
-        // Record log penugasan baru
-        $this->db->insert('perkara_mediator_log', [
+        // Record log (jika tabel ada)
+        $log_data = [
             'perkara_id'  => $perkara_id,
             'mediator_id' => $mediator_id,
-            'assigned_by' => $assigned_by,
             'tgl_assign'  => date('Y-m-d H:i:s'),
-        ]);
+        ];
+        if ($assigned_by) $log_data['assigned_by'] = $assigned_by;
+        if ($this->db->table_exists('perkara_mediator_log')) {
+            $this->db->insert('perkara_mediator_log', $log_data);
+        }
 
         return true;
     }
@@ -86,10 +80,10 @@ class M_perkara extends CI_Model {
     }
 
     public function get_all_by_pp($pp_id, $filter = [], $limit = 10, $offset = 0) {
-        $this->db->select('p.*, jp.nama as jenis_perkara, m.nama as nama_mediator, h.hasil');
+        $this->db->select('p.*, jp.nama as jenis_perkara, m.nama as nama_mediator, h.status_hasil');
         $this->db->from('perkara p');
         $this->db->join('jenis_perkara jp', 'jp.id = p.jenis_perkara_id', 'left');
-        $this->db->join('perkara_mediator pm', 'pm.perkara_id = p.id', 'left');
+        $this->db->join('perkara_mediator pm', 'pm.perkara_id = p.id AND pm.is_active = 1', 'left');
         $this->db->join('mediators m', 'm.id = pm.mediator_id', 'left');
         $this->db->join('hasil_mediasi h', 'h.perkara_id = p.id', 'left');
         $this->db->where('p.pp_id', $pp_id);
@@ -117,33 +111,41 @@ class M_perkara extends CI_Model {
     }
 
     public function get_all($filter = [], $limit = 10, $offset = 0) {
-        $this->db->select('p.*, jp.nama as jenis_perkara, m.nama as nama_mediator, h.hasil, u.nama as nama_pp');
+        $this->db->select('p.*, jp.nama as jenis_perkara, m.nama as nama_mediator, h.status_hasil, u.nama as nama_pp');
         $this->db->from('perkara p');
         $this->db->join('jenis_perkara jp', 'jp.id = p.jenis_perkara_id', 'left');
-        $this->db->join('perkara_mediator pm', 'pm.perkara_id = p.id', 'left');
+        $this->db->join('perkara_mediator pm', 'pm.perkara_id = p.id AND pm.is_active = 1', 'left');
         $this->db->join('mediators m', 'm.id = pm.mediator_id', 'left');
         $this->db->join('hasil_mediasi h', 'h.perkara_id = p.id', 'left');
         $this->db->join('users u', 'u.id = p.pp_id', 'left');
         if (!empty($filter['status'])) $this->db->where('p.status', $filter['status']);
         if (!empty($filter['search'])) $this->db->like('p.nomor_perkara', $filter['search']);
         if (!empty($filter['mediator_id'])) $this->db->where('pm.mediator_id', $filter['mediator_id']);
+        if (!empty($filter['hakim_id_sipp'])) {
+            $id_sipp = $this->db->escape_str($filter['hakim_id_sipp']);
+            $this->db->where("FIND_IN_SET('{$id_sipp}', p.majelis_id) > 0");
+        }
         return $this->db->limit($limit, $offset)->order_by('p.created_at', 'DESC')->get()->result();
     }
 
     public function count_all($filter = []) {
         $this->db->from('perkara p');
-        $this->db->join('perkara_mediator pm', 'pm.perkara_id = p.id', 'left');
+        $this->db->join('perkara_mediator pm', 'pm.perkara_id = p.id AND pm.is_active = 1', 'left');
         if (!empty($filter['status'])) $this->db->where('p.status', $filter['status']);
         if (!empty($filter['search'])) $this->db->like('p.nomor_perkara', $filter['search']);
         if (!empty($filter['mediator_id'])) $this->db->where('pm.mediator_id', $filter['mediator_id']);
+        if (!empty($filter['hakim_id_sipp'])) {
+            $id_sipp = $this->db->escape_str($filter['hakim_id_sipp']);
+            $this->db->where("FIND_IN_SET('{$id_sipp}', p.majelis_id) > 0");
+        }
         return $this->db->count_all_results();
     }
 
     public function get_by_mediator($mediator_id, $filter = [], $limit = 10, $offset = 0) {
-        $this->db->select('p.*, jp.nama as jenis_perkara, h.hasil');
+        $this->db->select('p.*, jp.nama as jenis_perkara, h.status_hasil');
         $this->db->from('perkara p');
         $this->db->join('jenis_perkara jp', 'jp.id = p.jenis_perkara_id', 'left');
-        $this->db->join('perkara_mediator pm', 'pm.perkara_id = p.id');
+        $this->db->join('perkara_mediator pm', 'pm.perkara_id = p.id AND pm.is_active = 1');
         $this->db->join('hasil_mediasi h', 'h.perkara_id = p.id', 'left');
         $this->db->where('pm.mediator_id', $mediator_id);
         if (!empty($filter['status'])) $this->db->where('p.status', $filter['status']);

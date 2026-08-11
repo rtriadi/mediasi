@@ -137,7 +137,7 @@
         <tr>
             <td width="150"><strong>Hasil Mediasi</strong></td>
             <td width="10">:</td>
-            <td><strong style="font-size: 13px; text-transform: uppercase; color: #000;"><?= str_replace('_', ' ', $hasil->hasil) ?></strong></td>
+            <td><strong style="font-size: 13px; text-transform: uppercase; color: #000;"><?= str_replace('_', ' ', $hasil->status_hasil) ?></strong></td>
         </tr>
         <tr>
             <td><strong>Tanggal Selesai</strong></td>

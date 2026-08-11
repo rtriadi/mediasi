@@ -1,8 +1,14 @@
-﻿<!-- Header -->
+<!-- Header -->
 <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
     <div>
         <h2 class="text-2xl font-extrabold font-heading text-slate-900 tracking-tight">Monitoring Perkara Mediasi</h2>
-        <p class="text-xs text-slate-500 mt-1">Daftar seluruh perkara mediasi di Pengadilan Agama Gorontalo</p>
+        <p class="text-xs text-slate-500 mt-1">
+            <?php if (!empty($is_admin)): ?>
+                Seluruh perkara mediasi di Pengadilan Agama Gorontalo
+            <?php else: ?>
+                Perkara mediasi di mana Anda terdaftar sebagai Majelis Hakim
+            <?php endif; ?>
+        </p>
     </div>
 </div>
 
@@ -69,12 +75,16 @@
                         <?php elseif ($p->status === 'proses'): ?>
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-800">Dalam Proses</span>
                         <?php elseif ($p->status === 'selesai'): ?>
-                            <?php if ($p->hasil === 'berhasil'): ?>
-                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">✓ Berhasil</span>
-                            <?php elseif ($p->hasil === 'berhasil_sebagian'): ?>
+                            <?php if ($p->status_hasil === 'berhasil_seluruhnya'): ?>
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">✓ Berhasil Seluruhnya</span>
+                            <?php elseif ($p->status_hasil === 'berhasil_sebagian'): ?>
                             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800">~ Berhasil Sebagian</span>
-                            <?php else: ?>
+                            <?php elseif ($p->status_hasil === 'tidak_berhasil'): ?>
                             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800">✕ Tidak Berhasil</span>
+                            <?php elseif ($p->status_hasil === 'tidak_dapat_dilaksanakan'): ?>
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-700">⊘ Tidak Dapat Dilaksanakan</span>
+                            <?php else: ?>
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-600">Selesai</span>
                             <?php endif; ?>
                         <?php endif; ?>
                     </td>
@@ -85,7 +95,7 @@
                                 <span>Detail</span>
                                 <i class="fa-solid fa-chevron-right text-[10px]"></i>
                             </a>
-                            <?php if ($p->status === 'selesai' && $p->hasil): ?>
+                            <?php if ($p->status === 'selesai' && $p->status_hasil): ?>
                             <a href="<?= site_url("hakim/perkara/download_laporan/{$p->id}") ?>"
                                 class="inline-flex items-center gap-1 text-xs text-emerald-600 hover:text-emerald-800 font-bold px-2.5 py-1 rounded-lg hover:bg-emerald-50 transition-colors">
                                 <i class="fa-solid fa-download text-[10px]"></i>

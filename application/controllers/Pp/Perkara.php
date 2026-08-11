@@ -39,10 +39,9 @@ class Perkara extends MY_Controller {
                 foreach ($pihak_penggugat as $idx => $p) {
                     if (!empty($p['nama'])) {
                         $all_pihak[] = [
-                            'jenis'       => 'penggugat',
+                            'jenis_pihak' => 'penggugat',
                             'nama'        => trim($p['nama']),
-                            'kuasa_hukum' => trim($p['kuasa_hukum'] ?? '') ?: null,
-                            'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
+                                                        'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
                             'email'       => trim($p['email'] ?? '') ?: null,
                             'urutan'      => $idx + 1,
                         ];
@@ -52,10 +51,9 @@ class Perkara extends MY_Controller {
                 foreach ($pihak_tergugat as $idx => $p) {
                     if (!empty($p['nama'])) {
                         $all_pihak[] = [
-                            'jenis'       => 'tergugat',
+                            'jenis_pihak' => 'tergugat',
                             'nama'        => trim($p['nama']),
-                            'kuasa_hukum' => trim($p['kuasa_hukum'] ?? '') ?: null,
-                            'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
+                                                        'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
                             'email'       => trim($p['email'] ?? '') ?: null,
                             'urutan'      => $idx + 1,
                         ];
@@ -66,10 +64,9 @@ class Perkara extends MY_Controller {
                 foreach ($pihak_turut as $idx => $p) {
                     if (!empty($p['nama'])) {
                         $all_pihak[] = [
-                            'jenis'       => 'turut_tergugat',
+                            'jenis_pihak' => 'turut_tergugat',
                             'nama'        => trim($p['nama']),
-                            'kuasa_hukum' => trim($p['kuasa_hukum'] ?? '') ?: null,
-                            'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
+                                                        'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
                             'email'       => trim($p['email'] ?? '') ?: null,
                             'urutan'      => $idx + 1,
                         ];
@@ -183,10 +180,9 @@ class Perkara extends MY_Controller {
                         $all_pihak[] = [
                             'id'          => $p['id'] ?? null,
                             'perkara_id'  => $id,
-                            'jenis'       => 'penggugat',
+                            'jenis_pihak' => 'penggugat',
                             'nama'        => trim($p['nama']),
-                            'kuasa_hukum' => trim($p['kuasa_hukum'] ?? '') ?: null,
-                            'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
+                                                        'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
                             'email'       => trim($p['email'] ?? '') ?: null,
                             'urutan'      => $idx + 1,
                         ];
@@ -198,10 +194,9 @@ class Perkara extends MY_Controller {
                         $all_pihak[] = [
                             'id'          => $p['id'] ?? null,
                             'perkara_id'  => $id,
-                            'jenis'       => 'tergugat',
+                            'jenis_pihak' => 'tergugat',
                             'nama'        => trim($p['nama']),
-                            'kuasa_hukum' => trim($p['kuasa_hukum'] ?? '') ?: null,
-                            'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
+                                                        'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
                             'email'       => trim($p['email'] ?? '') ?: null,
                             'urutan'      => $idx + 1,
                         ];
@@ -214,10 +209,9 @@ class Perkara extends MY_Controller {
                         $all_pihak[] = [
                             'id'          => $p['id'] ?? null,
                             'perkara_id'  => $id,
-                            'jenis'       => 'turut_tergugat',
+                            'jenis_pihak' => 'turut_tergugat',
                             'nama'        => trim($p['nama']),
-                            'kuasa_hukum' => trim($p['kuasa_hukum'] ?? '') ?: null,
-                            'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
+                                                        'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
                             'email'       => trim($p['email'] ?? '') ?: null,
                             'urutan'      => $idx + 1,
                         ];

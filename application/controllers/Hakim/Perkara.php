@@ -14,9 +14,14 @@ class Perkara extends MY_Controller {
     }
 
     public function index() {
+        $hakim_id_sipp = $this->session->userdata('id_sipp');
+        $user_roles    = $this->session->userdata('roles') ?: [$this->session->userdata('role')];
+        $is_admin      = in_array('admin', $user_roles);
+
         $filter = [
-            'status' => $this->input->get('status'),
-            'search' => $this->input->get('search'),
+            'status'         => $this->input->get('status'),
+            'search'         => $this->input->get('search'),
+            'hakim_id_sipp'  => $is_admin ? null : $hakim_id_sipp,
         ];
         $page   = max(1, (int)($this->input->get('page') ?: 1));
         $limit  = 10;
@@ -26,12 +31,13 @@ class Perkara extends MY_Controller {
         $perkaras = $this->M_perkara->get_all($filter, $limit, $offset);
 
         $this->render('hakim/perkara/index', [
-            'title'      => 'Semua Perkara Mediasi (Hakim)',
-            'perkaras'   => $perkaras,
-            'total'      => $total,
-            'filter'     => $filter,
-            'page'       => $page,
-            'pagination' => $this->paginate('hakim/perkara', $total, $limit, $filter),
+            'title'         => 'Monitoring Perkara Mediasi',
+            'perkaras'      => $perkaras,
+            'total'         => $total,
+            'filter'        => $filter,
+            'page'          => $page,
+            'pagination'    => $this->paginate('hakim/perkara', $total, $limit, $filter),
+            'is_admin'      => $is_admin,
         ]);
     }
 
@@ -57,9 +63,9 @@ class Perkara extends MY_Controller {
 
     public function download_laporan($perkara_id) {
         $hasil = $this->M_hasil->get_by_perkara($perkara_id);
-        if (!$hasil || !$hasil->file_laporan) show_404();
+        if (!$hasil || !$hasil->file_laporan_pdf) show_404();
 
-        $file_path = FCPATH . 'uploads/laporan/' . $hasil->file_laporan;
+        $file_path = FCPATH . 'uploads/laporan/' . $hasil->file_laporan_pdf;
         if (!file_exists($file_path)) show_error('File laporan tidak ditemukan.', 404);
 
         $this->load->helper('download');

@@ -45,8 +45,8 @@
             <div>
                 <p class="text-xs text-gray-400 mb-1">Hasil Mediasi</p>
                 <?php if ($hasil): ?>
-                    <p class="font-bold text-sm capitalize <?= $hasil->hasil === 'berhasil' ? 'text-green-700' : ($hasil->hasil === 'berhasil_sebagian' ? 'text-amber-700' : 'text-red-700') ?>">
-                        <?= str_replace('_', ' ', $hasil->hasil) ?>
+                    <p class="font-bold text-sm capitalize <?= $hasil->status_hasil === 'berhasil_seluruhnya' ? 'text-green-700' : ($hasil->status_hasil === 'berhasil_sebagian' ? 'text-amber-700' : 'text-red-700') ?>">
+                        <?= str_replace('_', ' ', $hasil->status_hasil) ?>
                     </p>
                 <?php else: ?>
                     <p class="text-gray-400 italic">Belum ada hasil</p>

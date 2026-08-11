@@ -47,6 +47,8 @@ class Auth extends CI_Controller {
                 'roles'       => $roles_array,
                 'is_mediator' => $has_mediator_role,
                 'mediator_id' => $mediator_id ?: null,
+                'id_sipp'     => $user->id_sipp ?? null,
+                'nip'         => $user->nip ?? null,
             ]);
             $this->_redirect_by_role($primary_role);
         } else {

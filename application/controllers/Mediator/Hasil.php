@@ -66,9 +66,9 @@ class Hasil extends MY_Controller {
         }
 
         if ($this->input->post()) {
-            $this->form_validation->set_rules('hasil', 'Hasil Mediasi', 'required|in_list[berhasil,berhasil_sebagian,tidak_berhasil]');
+            $this->form_validation->set_rules('status_hasil', 'Hasil Mediasi', 'required|in_list[berhasil_seluruhnya,berhasil_sebagian,tidak_berhasil,tidak_dapat_dilaksanakan]');
 
-            if (empty($_FILES['file_laporan']['name'])) {
+            if (empty($_FILES['file_laporan']['name']) && empty($_FILES['file_laporan_pdf']['name'])) {
                 $this->session->set_flashdata('error', 'File Laporan Hasil Mediasi (format PDF) wajib diunggah.');
             } elseif ($this->form_validation->run() === FALSE) {
                 $this->session->set_flashdata('error', validation_errors(' ', ' | '));
@@ -96,12 +96,19 @@ class Hasil extends MY_Controller {
                 }
                 $file_name = $this->upload->data('file_name');
 
+                $status_hasil = $this->input->post('status_hasil');
                 $this->M_hasil->insert([
-                    'perkara_id'   => $perkara_id,
-                    'mediator_id'  => $mediator_id ?: $perkara->mediator_id,
-                    'hasil'        => $this->input->post('hasil'),
-                    'file_laporan' => $file_name,
-                    'catatan'      => $this->input->post('catatan', true) ?: null,
+                    'perkara_id'            => $perkara_id,
+                    'mediator_id'           => $mediator_id ?: $perkara->mediator_id,
+                    'status_hasil'          => $status_hasil,
+                    'tgl_laporan'           => date('Y-m-d'),
+                    'file_laporan_pdf'      => $file_name,
+                    'ringkasan_kesepakatan' => in_array($status_hasil, ['berhasil_seluruhnya','berhasil_sebagian'])
+                                              ? ($this->input->post('ringkasan_kesepakatan', true) ?: null)
+                                              : null,
+                    'alasan_kegagalan'      => in_array($status_hasil, ['tidak_berhasil','tidak_dapat_dilaksanakan'])
+                                              ? ($this->input->post('alasan_kegagalan', true) ?: null)
+                                              : null,
                 ]);
 
                 // Update status perkara menjadi selesai
