@@ -29,6 +29,7 @@ class M_pengaturan extends CI_Model {
             'api_mediasi_url'     => 'http://192.168.100.5/perkara360/api/mediasi',
             'api_mediasi_key'     => '',
             'api_sync_auto'       => '1',
+            'api_sync_interval_menit' => '15',
             'batas_waktu_mediasi_hari' => '30',
             'api_last_sync'       => '',
         ];

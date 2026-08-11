@@ -48,6 +48,7 @@ class Pengaturan extends MY_Controller {
         $api_mediasi_url          = trim($this->input->post('api_mediasi_url', true)) ?: 'http://192.168.100.5/perkara360/api/mediasi';
         $api_mediasi_key          = trim($this->input->post('api_mediasi_key', true));
         $api_sync_auto            = $this->input->post('api_sync_auto') ? '1' : '0';
+        $api_sync_interval_menit  = (int)$this->input->post('api_sync_interval_menit', true) ?: 15;
         $batas_waktu_mediasi_hari = (int)$this->input->post('batas_waktu_mediasi_hari', true) ?: 30;
 
         $this->M_pengaturan->save('nama_aplikasi', $nama_aplikasi);
@@ -69,6 +70,7 @@ class Pengaturan extends MY_Controller {
         $this->M_pengaturan->save('api_mediasi_url', $api_mediasi_url);
         $this->M_pengaturan->save('api_mediasi_key', $api_mediasi_key);
         $this->M_pengaturan->save('api_sync_auto', $api_sync_auto);
+        $this->M_pengaturan->save('api_sync_interval_menit', $api_sync_interval_menit);
         $this->M_pengaturan->save('batas_waktu_mediasi_hari', $batas_waktu_mediasi_hari);
 
         // Upload Logo Aplikasi jika ada

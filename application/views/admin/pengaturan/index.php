@@ -264,11 +264,18 @@ $wa_active    = get_app_setting('wa_notif_active', '0') === '1';
                 </div>
 
                 <div class="space-y-4">
-                    <!-- SIPP API Endpoint URL -->
+                    <!-- SIPP API Endpoint URL + Button Tes Koneksi -->
                     <div>
-                        <label for="api_mediasi_url" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                            API Endpoint URL <span class="text-rose-500">*</span>
-                        </label>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label for="api_mediasi_url" class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                                API Endpoint URL <span class="text-rose-500">*</span>
+                            </label>
+                            <button type="button" onclick="testApiConnection()" id="btn-test-api"
+                                class="inline-flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-3 py-1 rounded-lg text-xs transition-colors border border-indigo-200 shadow-sm active:scale-95">
+                                <i class="fa-solid fa-plug-circle-bolt text-indigo-600" id="icon-test-api"></i>
+                                <span id="text-test-api">Tes Koneksi API</span>
+                            </button>
+                        </div>
                         <input type="text" id="api_mediasi_url" name="api_mediasi_url" required
                             value="<?= htmlspecialchars(get_app_setting('api_mediasi_url', 'http://192.168.100.5/perkara360/api/mediasi')) ?>"
                             class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 font-mono text-slate-900"
@@ -276,29 +283,79 @@ $wa_active    = get_app_setting('wa_notif_active', '0') === '1';
                         <p class="text-[11px] text-slate-400 mt-1">URL Endpoint API SIPP untuk mengambil data mediasi perkara (Format JSON).</p>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Result Alert Box for API Test Connection -->
+                    <div id="test-api-result" class="hidden p-3.5 rounded-xl text-xs border font-medium"></div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <!-- SIPP API Key (Header X-API-KEY) -->
-                        <div>
+                        <div class="sm:col-span-1">
                             <label for="api_mediasi_key" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                                API Key (Header X-API-KEY)
+                                API Key (X-API-KEY)
                             </label>
                             <input type="text" id="api_mediasi_key" name="api_mediasi_key"
                                 value="<?= htmlspecialchars(get_app_setting('api_mediasi_key', '')) ?>"
                                 class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 font-mono text-slate-900"
-                                placeholder="Kosongkan jika tanpa header API Key">
-                            <p class="text-[11px] text-slate-400 mt-1">Kunci API yang akan dikirim via Header <code class="bg-slate-100 px-1 py-0.5 rounded text-indigo-700 font-mono">X-API-KEY</code>.</p>
+                                placeholder="Header Key">
+                            <p class="text-[11px] text-slate-400 mt-1">Dikirim via Header <code class="bg-slate-100 px-1 py-0.5 rounded text-indigo-700 font-mono">X-API-KEY</code>.</p>
+                        </div>
+
+                        <!-- Interval Cronjob Auto Sync (Menit) -->
+                        <div>
+                            <label for="api_sync_interval_menit" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                                Interval Cronjob (Menit)
+                            </label>
+                            <?php $interval_menit = (int)get_app_setting('api_sync_interval_menit', '15'); ?>
+                            <input type="number" id="api_sync_interval_menit" name="api_sync_interval_menit" min="1" max="1440" required
+                                value="<?= $interval_menit ?>"
+                                oninput="updateCronHelper(this.value)"
+                                class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
+                                placeholder="15">
+                            <p class="text-[11px] text-slate-400 mt-1">Jarak waktu eksekusi cronjob (misal: tiap 15 menit).</p>
                         </div>
 
                         <!-- Batas Waktu Mediasi (Hari Kalender) -->
                         <div>
                             <label for="batas_waktu_mediasi_hari" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                                Batas Waktu Mediasi (Hari Kalender)
+                                Batas Mediasi (Hari)
                             </label>
                             <input type="number" id="batas_waktu_mediasi_hari" name="batas_waktu_mediasi_hari" min="1" max="180"
                                 value="<?= htmlspecialchars(get_app_setting('batas_waktu_mediasi_hari', '30')) ?>"
                                 class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
                                 placeholder="30">
-                            <p class="text-[11px] text-slate-400 mt-1">Jumlah hari kalender sejak tanggal penetapan mediator (Default: 30 hari).</p>
+                            <p class="text-[11px] text-slate-400 mt-1">Default 30 hari kalender sejak penetapan.</p>
+                        </div>
+                    </div>
+
+                    <!-- Cronjob Command Helper Guide -->
+                    <div class="p-4 bg-slate-900 text-slate-100 rounded-2xl border border-slate-800 space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-terminal"></i>
+                                <span>Panduan Command Cronjob</span>
+                            </span>
+                            <span class="text-[10px] bg-indigo-900/80 text-indigo-300 px-2 py-0.5 rounded-full font-mono">Tiap <span id="cron-interval-badge"><?= $interval_menit ?></span> Menit</span>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-[11px] text-slate-400 mb-1">Linux / cPanel Crontab Command:</label>
+                            <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 font-mono text-xs text-emerald-400 flex items-center justify-between overflow-x-auto">
+                                <code id="crontab-string">*/<?= $interval_menit ?> * * * * php <?= FCPATH ?>cronjob_api_sync.php</code>
+                                <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('crontab-string').innerText); alert('Command Crontab disalin!')" 
+                                    class="text-slate-400 hover:text-white text-xs ml-2 px-2 py-1 bg-slate-800 rounded-md hover:bg-slate-700">
+                                    <i class="fa-solid fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] text-slate-400 mb-1">Windows Task Scheduler Command:</label>
+                            <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 font-mono text-xs text-blue-300 flex items-center justify-between overflow-x-auto">
+                                <code id="windows-cron-string">C:\xampp\php\php.exe "<?= FCPATH ?>cronjob_api_sync.php"</code>
+                                <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('windows-cron-string').innerText); alert('Command Windows disalin!')" 
+                                    class="text-slate-400 hover:text-white text-xs ml-2 px-2 py-1 bg-slate-800 rounded-md hover:bg-slate-700">
+                                    <i class="fa-solid fa-copy"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -308,6 +365,8 @@ $wa_active    = get_app_setting('wa_notif_active', '0') === '1';
                         <span><i class="fa-solid fa-clock-rotate-left mr-1.5 text-slate-500"></i>Terakhir Sinkronisasi API:</span>
                         <strong class="font-mono text-slate-900"><?= date('d-m-Y H:i:s', strtotime($last_sync)) ?> WITA</strong>
                     </div>
+                    <?php endif; ?>
+                </div>
                     <?php endif; ?>
                 </div>
             </div>
@@ -400,3 +459,72 @@ $wa_active    = get_app_setting('wa_notif_active', '0') === '1';
     </div>
 
 </div>
+
+<script>
+function updateCronHelper(val) {
+    const min = Math.max(1, parseInt(val) || 15);
+    document.getElementById('cron-interval-badge').innerText = min;
+    document.getElementById('crontab-string').innerText = '*/' + min + ' * * * * php <?= FCPATH ?>cronjob_api_sync.php';
+}
+
+function testApiConnection() {
+    const btn = document.getElementById('btn-test-api');
+    const icon = document.getElementById('icon-test-api');
+    const text = document.getElementById('text-test-api');
+    const resBox = document.getElementById('test-api-result');
+    const urlVal = document.getElementById('api_mediasi_url').value;
+    const keyVal = document.getElementById('api_mediasi_key').value;
+
+    if (!urlVal) {
+        alert('Harap isi API Endpoint URL terlebih dahulu.');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.classList.add('opacity-75', 'cursor-not-allowed');
+    icon.className = 'fa-solid fa-spinner fa-spin text-indigo-600';
+    text.innerText = 'Menguji...';
+
+    resBox.classList.add('hidden');
+    resBox.className = 'p-3.5 rounded-xl text-xs border font-medium hidden';
+
+    const formData = new FormData();
+    formData.append('api_mediasi_url', urlVal);
+    formData.append('api_mediasi_key', keyVal);
+
+    fetch('<?= site_url("admin/api_sync/test") ?>', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        btn.disabled = false;
+        btn.classList.remove('opacity-75', 'cursor-not-allowed');
+        icon.className = 'fa-solid fa-plug-circle-bolt text-indigo-600';
+        text.innerText = 'Tes Koneksi API';
+
+        resBox.classList.remove('hidden');
+        if (data.status === 'success') {
+            resBox.className = 'p-3.5 rounded-xl text-xs border font-medium bg-emerald-50 text-emerald-900 border-emerald-200 flex items-start gap-2';
+            resBox.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600 text-sm mt-0.5"></i> <div><strong>Koneksi Berhasil!</strong><br>' + data.message + '</div>';
+        } else {
+            resBox.className = 'p-3.5 rounded-xl text-xs border font-medium bg-rose-50 text-rose-900 border-rose-200 flex items-start gap-2';
+            resBox.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-600 text-sm mt-0.5"></i> <div><strong>Koneksi Gagal:</strong><br>' + (data.message || 'Gagal terhubung ke API SIPP') + '</div>';
+        }
+    })
+    .catch(err => {
+        btn.disabled = false;
+        btn.classList.remove('opacity-75', 'cursor-not-allowed');
+        icon.className = 'fa-solid fa-plug-circle-bolt text-indigo-600';
+        text.innerText = 'Tes Koneksi API';
+
+        resBox.classList.remove('hidden');
+        resBox.className = 'p-3.5 rounded-xl text-xs border font-medium bg-rose-50 text-rose-900 border-rose-200 flex items-start gap-2';
+        resBox.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-600 text-sm mt-0.5"></i> <div><strong>Koneksi Gagal:</strong><br>Terjadi kesalahan sistem saat menghubungi server local API.</div>';
+        console.error(err);
+    });
+}
+</script>

@@ -20,10 +20,10 @@ class SippApi {
     /**
      * Melakukan HTTP request cURL ke API SIPP
      */
-    public function fetch_data($params = []) {
+    public function fetch_data($params = [], $override_url = null, $override_key = null) {
         $settings = $this->CI->M_pengaturan->get_all_as_array();
-        $api_url = !empty($settings['api_mediasi_url']) ? trim($settings['api_mediasi_url']) : 'http://192.168.100.5/perkara360/api/mediasi';
-        $api_key = !empty($settings['api_mediasi_key']) ? trim($settings['api_mediasi_key']) : '';
+        $api_url  = !empty($override_url) ? trim($override_url) : (!empty($settings['api_mediasi_url']) ? trim($settings['api_mediasi_url']) : 'http://192.168.100.5/perkara360/api/mediasi');
+        $api_key  = ($override_key !== null) ? trim($override_key) : (!empty($settings['api_mediasi_key']) ? trim($settings['api_mediasi_key']) : '');
 
         if (!empty($params)) {
             $query = http_build_query($params);
@@ -33,7 +33,7 @@ class SippApi {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $api_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 
@@ -45,30 +45,60 @@ class SippApi {
         }
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
-        $response = curl_exec($ch);
+        $response  = curl_exec($ch);
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $error = curl_error($ch);
+        $error     = curl_error($ch);
         curl_close($ch);
 
         if ($error) {
             return [
-                'status'  => 'error',
-                'message' => 'Gagal terhubung ke API SIPP: ' . $error,
-                'data'    => []
+                'status'    => 'error',
+                'message'   => 'Gagal terhubung ke API SIPP: ' . $error,
+                'http_code' => $http_code,
+                'data'      => []
             ];
         }
 
         $result = json_decode($response, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
             return [
-                'status'  => 'error',
-                'message' => 'Format respon API SIPP tidak valid (Bukan JSON). HTTP Code: ' . $http_code,
-                'raw'     => substr($response, 0, 500),
-                'data'    => []
+                'status'    => 'error',
+                'message'   => 'Format respon API SIPP tidak valid (Bukan JSON). HTTP Code: ' . $http_code,
+                'raw'       => substr($response, 0, 500),
+                'http_code' => $http_code,
+                'data'      => []
             ];
         }
 
+        if (!isset($result['http_code'])) {
+            $result['http_code'] = $http_code;
+        }
+
         return $result;
+    }
+
+    /**
+     * Memeriksa tes koneksi ke API SIPP
+     */
+    public function test_connection($url = null, $key = null) {
+        $res = $this->fetch_data([], $url, $key);
+
+        if (isset($res['status']) && $res['status'] === 'error') {
+            return [
+                'status'  => 'error',
+                'message' => 'Tes Koneksi Gagal: ' . $res['message']
+            ];
+        }
+
+        $count = isset($res['count']) ? (int)$res['count'] : (isset($res['data']) && is_array($res['data']) ? count($res['data']) : 0);
+        $msg   = isset($res['message']) ? $res['message'] : 'API SIPP merespon dengan baik.';
+
+        return [
+            'status'    => 'success',
+            'message'   => 'Koneksi Berhasil! API SIPP terhubung. (' . $msg . ' - Total data: ' . $count . ')',
+            'count'     => $count,
+            'http_code' => isset($res['http_code']) ? $res['http_code'] : 200
+        ];
     }
 
     /**

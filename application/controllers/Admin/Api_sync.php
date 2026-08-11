@@ -44,4 +44,17 @@ class Api_sync extends MY_Controller {
              ->set_content_type('application/json')
              ->set_output(json_encode($raw));
     }
+
+    /**
+     * Endpoint Tes Koneksi API dari Form Pengaturan Admin
+     */
+    public function test() {
+        $url = trim($this->input->post('api_mediasi_url', true));
+        $key = trim($this->input->post('api_mediasi_key', true));
+
+        $res = $this->sippapi->test_connection($url, $key);
+        $this->output
+             ->set_content_type('application/json')
+             ->set_output(json_encode($res));
+    }
 }
