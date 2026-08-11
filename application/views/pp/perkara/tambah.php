@@ -78,22 +78,36 @@
                     </div>
                     <div id="container-penggugat" class="space-y-3">
                         <!-- Initial Row -->
-                        <div class="pihak-row grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 p-3.5 bg-gray-50 rounded-xl border border-gray-200">
-                            <div>
-                                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Nama Pihak <span class="text-red-500">*</span></label>
-                                <input type="text" name="pihak_penggugat[0][nama]" required placeholder="Nama Penggugat 1 *" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500">
+                        <div class="pihak-row p-3.5 bg-gray-50 rounded-xl border border-gray-200 space-y-2.5">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">Nama Pihak <span class="text-red-500">*</span></label>
+                                    <input type="text" name="pihak_penggugat[0][nama]" required placeholder="Nama Penggugat 1 *" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Email Pihak</label>
+                                    <input type="email" name="pihak_penggugat[0][email]" placeholder="email@pihak.com" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 font-mono bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">No. HP / WA Pihak</label>
+                                    <input type="tel" name="pihak_penggugat[0][no_hp]" placeholder="08xxxxxxxxxx" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 font-mono bg-white">
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Kuasa Hukum</label>
-                                <input type="text" name="pihak_penggugat[0][kuasa_hukum]" placeholder="Kuasa Hukum (opsional)" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Email (Default Notifikasi)</label>
-                                <input type="email" name="pihak_penggugat[0][email]" placeholder="email@domain.com" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 font-mono">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">No. HP / WA</label>
-                                <input type="tel" name="pihak_penggugat[0][no_hp]" placeholder="08xxxxxxxxxx" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 font-mono">
+                            
+                            <!-- Sub-block Kuasa Hukum -->
+                            <div class="pt-2 border-t border-gray-200/80 grid grid-cols-1 sm:grid-cols-3 gap-3 bg-blue-50/60 p-3 rounded-lg">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-blue-700 uppercase tracking-wider mb-1">⚖️ Kuasa Hukum (Nama)</label>
+                                    <input type="text" name="pihak_penggugat[0][kuasa_hukum]" placeholder="Nama Kuasa Hukum / Pengacara" class="w-full border border-blue-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-blue-700 uppercase tracking-wider mb-1">Email Kuasa Hukum</label>
+                                    <input type="email" name="pihak_penggugat[0][kuasa_email]" placeholder="kuasa@domain.com" class="w-full border border-blue-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 font-mono bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-blue-700 uppercase tracking-wider mb-1">No. HP / WA Kuasa Hukum</label>
+                                    <input type="tel" name="pihak_penggugat[0][kuasa_no_hp]" placeholder="08xxxxxxxxxx" class="w-full border border-blue-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 font-mono bg-white">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -112,22 +126,36 @@
                     </div>
                     <div id="container-tergugat" class="space-y-3">
                         <!-- Initial Row -->
-                        <div class="pihak-row grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 p-3.5 bg-gray-50 rounded-xl border border-gray-200">
-                            <div>
-                                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Nama Pihak <span class="text-red-500">*</span></label>
-                                <input type="text" name="pihak_tergugat[0][nama]" required placeholder="Nama Tergugat 1 *" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500">
+                        <div class="pihak-row p-3.5 bg-gray-50 rounded-xl border border-gray-200 space-y-2.5">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">Nama Pihak <span class="text-red-500">*</span></label>
+                                    <input type="text" name="pihak_tergugat[0][nama]" required placeholder="Nama Tergugat 1 *" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Email Pihak</label>
+                                    <input type="email" name="pihak_tergugat[0][email]" placeholder="email@pihak.com" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 font-mono bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">No. HP / WA Pihak</label>
+                                    <input type="tel" name="pihak_tergugat[0][no_hp]" placeholder="08xxxxxxxxxx" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 font-mono bg-white">
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Kuasa Hukum</label>
-                                <input type="text" name="pihak_tergugat[0][kuasa_hukum]" placeholder="Kuasa Hukum (opsional)" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Email (Default Notifikasi)</label>
-                                <input type="email" name="pihak_tergugat[0][email]" placeholder="email@domain.com" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 font-mono">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">No. HP / WA</label>
-                                <input type="tel" name="pihak_tergugat[0][no_hp]" placeholder="08xxxxxxxxxx" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 font-mono">
+                            
+                            <!-- Sub-block Kuasa Hukum -->
+                            <div class="pt-2 border-t border-gray-200/80 grid grid-cols-1 sm:grid-cols-3 gap-3 bg-amber-50/60 p-3 rounded-lg">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1">⚖️ Kuasa Hukum (Nama)</label>
+                                    <input type="text" name="pihak_tergugat[0][kuasa_hukum]" placeholder="Nama Kuasa Hukum / Pengacara" class="w-full border border-amber-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-amber-500 bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1">Email Kuasa Hukum</label>
+                                    <input type="email" name="pihak_tergugat[0][kuasa_email]" placeholder="kuasa@domain.com" class="w-full border border-amber-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-amber-500 font-mono bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1">No. HP / WA Kuasa Hukum</label>
+                                    <input type="tel" name="pihak_tergugat[0][kuasa_no_hp]" placeholder="08xxxxxxxxxx" class="w-full border border-amber-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-amber-500 font-mono bg-white">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -169,26 +197,40 @@ function addPihakRow(type) {
     const container = document.getElementById(`container-${type}`);
     const nameAttr = type === 'penggugat' ? `pihak_penggugat[${idx}]` : (type === 'tergugat' ? `pihak_tergugat[${idx}]` : `pihak_turut[${idx}]`);
     const label = type === 'penggugat' ? `Penggugat ${idx+1}` : (type === 'tergugat' ? `Tergugat ${idx+1}` : `Turut Tergugat ${idx+1}`);
+    const subBg = type === 'penggugat' ? 'bg-blue-50/60 border-blue-200 text-blue-700' : (type === 'tergugat' ? 'bg-amber-50/60 border-amber-200 text-amber-800' : 'bg-gray-100/70 border-gray-200 text-gray-700');
 
     const div = document.createElement('div');
-    div.className = 'pihak-row grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 p-3.5 bg-gray-50 rounded-xl border border-gray-200 relative group';
+    div.className = 'pihak-row p-3.5 bg-gray-50 rounded-xl border border-gray-200 space-y-2.5 relative animate-fade-in';
     div.innerHTML = `
-        <div>
-            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Nama Pihak <span class="text-red-500">*</span></label>
-            <input type="text" name="${nameAttr}[nama]" required placeholder="Nama ${label} *" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+                <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">Nama Pihak <span class="text-red-500">*</span></label>
+                <input type="text" name="${nameAttr}[nama]" required placeholder="Nama ${label} *" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 bg-white">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Email Pihak</label>
+                <input type="email" name="${nameAttr}[email]" placeholder="email@pihak.com" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 font-mono bg-white">
+            </div>
+            <div class="relative pr-8">
+                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">No. HP / WA Pihak</label>
+                <input type="tel" name="${nameAttr}[no_hp]" placeholder="08xxxxxxxxxx" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 font-mono bg-white">
+                <button type="button" onclick="this.closest('.pihak-row').remove()" class="absolute right-0 top-6 text-red-500 hover:text-red-700 p-1 text-lg font-bold" title="Hapus Pihak">×</button>
+            </div>
         </div>
-        <div>
-            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Kuasa Hukum</label>
-            <input type="text" name="${nameAttr}[kuasa_hukum]" placeholder="Kuasa Hukum (opsional)" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500">
-        </div>
-        <div>
-            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Email (Default Notifikasi)</label>
-            <input type="email" name="${nameAttr}[email]" placeholder="email@domain.com" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 font-mono">
-        </div>
-        <div class="relative pr-8">
-            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">No. HP / WA</label>
-            <input type="tel" name="${nameAttr}[no_hp]" placeholder="08xxxxxxxxxx" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 font-mono">
-            <button type="button" onclick="this.closest('.pihak-row').remove()" class="absolute right-0 top-6 text-red-500 hover:text-red-700 p-1 text-lg font-bold">×</button>
+
+        <div class="pt-2 border-t border-gray-200/80 grid grid-cols-1 sm:grid-cols-3 gap-3 ${subBg} p-3 rounded-lg">
+            <div>
+                <label class="block text-[11px] font-bold uppercase tracking-wider mb-1">⚖️ Kuasa Hukum (Nama)</label>
+                <input type="text" name="${nameAttr}[kuasa_hukum]" placeholder="Nama Kuasa Hukum / Pengacara" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 bg-white">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold uppercase tracking-wider mb-1">Email Kuasa Hukum</label>
+                <input type="email" name="${nameAttr}[kuasa_email]" placeholder="kuasa@domain.com" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 font-mono bg-white">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold uppercase tracking-wider mb-1">No. HP / WA Kuasa Hukum</label>
+                <input type="tel" name="${nameAttr}[kuasa_no_hp]" placeholder="08xxxxxxxxxx" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 font-mono bg-white">
+            </div>
         </div>
     `;
     container.appendChild(div);

@@ -140,10 +140,13 @@ class Jadwal extends MY_Controller {
             if ($this->form_validation->run() === FALSE) {
                 $this->session->set_flashdata('error', validation_errors(' ', ' | '));
             } else {
-                $tgl         = $this->input->post('tgl_mediasi');
-                $jam_mulai   = $this->input->post('jam_mulai');
-                $jam_selesai = $this->input->post('jam_selesai');
-                $ruangan_id  = $this->input->post('ruangan_id') ?: null;
+                $tgl              = $this->input->post('tgl_mediasi');
+                $jam_mulai        = $this->input->post('jam_mulai');
+                $jam_selesai      = $this->input->post('jam_selesai');
+                $ruangan_id       = $this->input->post('ruangan_id') ?: null;
+                $link_virtual     = $this->input->post('link_virtual', true) ?: null;
+                $platform_virtual = $this->input->post('platform_virtual', true) ?: null;
+                $keterangan       = $this->input->post('keterangan', true) ?: null;
 
                 // Validasi tanggal mediasi tidak boleh melebihi batas akhir mediasi
                 if (!empty($perkara->tgl_batas_mediasi) && strtotime($tgl) > strtotime($perkara->tgl_batas_mediasi)) {
@@ -177,9 +180,9 @@ class Jadwal extends MY_Controller {
                     'jam_selesai'     => $jam_selesai,
                     'ruangan_id'      => $ruangan_id,
                     'tempat_lain'     => $this->input->post('tempat_lain', true) ?: null,
-                    'link_virtual'    => $this->input->post('link_virtual', true) ?: null,
-                    'platform_virtual'=> $this->input->post('platform_virtual', true) ?: null,
-                    'keterangan'      => $this->input->post('keterangan', true) ?: null,
+                    'link_virtual'    => $link_virtual,
+                    'platform_virtual'=> $platform_virtual,
+                    'keterangan'      => $keterangan,
                 ]);
 
                 // Update status perkara ke 'proses' karena jadwal pertama sudah dibuat
@@ -391,10 +394,12 @@ class Jadwal extends MY_Controller {
             if ($this->form_validation->run() === FALSE) {
                 $this->session->set_flashdata('error', validation_errors(' ', ' | '));
             } else {
-                $tgl         = $this->input->post('tgl_mediasi');
-                $jam_mulai   = $this->input->post('jam_mulai');
-                $jam_selesai = $this->input->post('jam_selesai');
-                $ruangan_id  = $this->input->post('ruangan_id') ?: null;
+                $tgl              = $this->input->post('tgl_mediasi');
+                $jam_mulai        = $this->input->post('jam_mulai');
+                $jam_selesai      = $this->input->post('jam_selesai');
+                $ruangan_id       = $this->input->post('ruangan_id') ?: null;
+                $link_virtual     = $this->input->post('link_virtual', true) ?: null;
+                $platform_virtual = $this->input->post('platform_virtual', true) ?: null;
 
                 if (!empty($perkara->tgl_batas_mediasi) && strtotime($tgl) > strtotime($perkara->tgl_batas_mediasi)) {
                     $this->session->set_flashdata('error', 'Tanggal mediasi (' . date('d/m/Y', strtotime($tgl)) . ') melebihi Batas Akhir Mediasi (' . date('d/m/Y', strtotime($perkara->tgl_batas_mediasi)) . ').');

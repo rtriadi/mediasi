@@ -72,15 +72,8 @@
 							<td class="px-4 py-3.5 font-bold text-slate-900 font-mono text-xs"><?= htmlspecialchars($p->nomor_perkara) ?></td>
 							<td class="px-4 py-3.5 text-slate-700 font-medium"><?= htmlspecialchars($p->jenis_perkara) ?></td>
 							<td class="px-4 py-3.5 font-semibold text-slate-800"><?= htmlspecialchars($p->nama_mediator ?: 'Belum ditetapkan') ?></td>
-							<td class="px-4 py-3.5">
-								<?php
-								$diff = ceil((strtotime($p->tgl_batas_mediasi) - time()) / 86400);
-								$is_urgent = ($p->status !== 'selesai' && $diff < 7);
-								?>
-								<span class="font-mono text-xs <?= $is_urgent ? 'text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200' : 'text-slate-600' ?>">
-									<?= date('d/m/Y', strtotime($p->tgl_batas_mediasi)) ?>
-									<?= $is_urgent ? ' (sisa <7 hr)' : '' ?>
-								</span>
+							<td class="px-4 py-3.5 whitespace-nowrap">
+								<?= get_deadline_badge($p->tgl_batas_mediasi, $p->status) ?>
 							</td>
 							<td class="px-4 py-3.5">
 								<?php if ($p->status === 'menunggu'): ?>

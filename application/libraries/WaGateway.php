@@ -155,9 +155,22 @@ class WaGateway {
                  "Harap hadir tepat waktu dengan membawa Kartu Identitas Diri (KTP/SIM/Paspor).\n\n" .
                  "Terima Kasih.\n---\n*{$satker}*";
 
+        $sent_phones = [];
         foreach ($pihak as $p) {
-            if (!empty($p->no_hp)) {
-                $this->kirim($p->no_hp, $pesan, $perkara_id);
+            $hp = trim($p->no_hp ?? '');
+            if (!empty($hp) && !in_array($hp, $sent_phones)) {
+                $this->kirim($hp, $pesan, $perkara_id);
+                $sent_phones[] = $hp;
+            }
+        }
+
+        // Kirim notifikasi WA ke Kuasa Hukum jika memiliki no_hp sendiri
+        $kuasa_list = $this->CI->M_perkara->get_kuasa($perkara_id);
+        foreach ($kuasa_list as $k) {
+            $k_hp = trim($k->no_hp ?? '');
+            if (!empty($k_hp) && !in_array($k_hp, $sent_phones)) {
+                $this->kirim($k_hp, $pesan, $perkara_id);
+                $sent_phones[] = $k_hp;
             }
         }
     }
@@ -221,7 +234,7 @@ class WaGateway {
                  "Anda telah *DITUGASKAN* sebagai Mediator untuk perkara berikut. Harap segera membuat jadwal sesi mediasi pertama.\n\n" .
                  "• Nomor Perkara  : *{$perkara->nomor_perkara}*\n" .
                  "• Jenis Perkara  : " . ($perkara->jenis_perkara ?? '-') . "\n" .
-                 "• Hakim          : " . ($perkara->nama_hakim ?? '-') . "\n" .
+                 "• Majelis Hakim  : " . ($perkara->nama_hakim ?? '-') . "\n" .
                  "• Batas Mediasi  : *{$tgl_batas}*\n\n" .
                  "🔗 *Login untuk buat jadwal:*\n{$login_url}\n\n" .
                  "Terima Kasih.\n---\n*{$satker}*";

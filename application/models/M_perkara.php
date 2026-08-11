@@ -73,14 +73,19 @@ class M_perkara extends CI_Model {
 
         foreach ($pihak_list as &$p) {
             $p->jenis = $p->jenis_pihak;
-            $matched_kuasa = [];
+            $matched_kuasa_names = [];
+            $matched_kuasa_objects = [];
             foreach ($kuasa_list as $k) {
                 if ($k->pihak_id == $p->id || (empty($k->pihak_id) && $p->jenis_pihak === 'penggugat')) {
-                    $matched_kuasa[] = $k->nama;
+                    $matched_kuasa_names[] = $k->nama;
+                    $matched_kuasa_objects[] = $k;
                 }
             }
-            $p->kuasa_list  = $matched_kuasa;
-            $p->kuasa_hukum = !empty($matched_kuasa) ? implode(', ', $matched_kuasa) : null;
+            $p->kuasa_list    = $matched_kuasa_names;
+            $p->kuasa_hukum   = !empty($matched_kuasa_names) ? implode(', ', $matched_kuasa_names) : null;
+            $p->kuasa_details = $matched_kuasa_objects;
+            $p->kuasa_email   = !empty($matched_kuasa_objects[0]->email) ? $matched_kuasa_objects[0]->email : null;
+            $p->kuasa_no_hp   = !empty($matched_kuasa_objects[0]->no_hp) ? $matched_kuasa_objects[0]->no_hp : null;
         }
 
         return $pihak_list;
@@ -122,7 +127,7 @@ class M_perkara extends CI_Model {
         $this->db->select('p.*, p.majelis_hakim as nama_hakim, jp.nama as jenis_perkara, m.nama as nama_mediator, m.jenis as jenis_mediator, m.id as mediator_id, u.nama as nama_pp');
         $this->db->from('perkara p');
         $this->db->join('jenis_perkara jp', 'jp.id = p.jenis_perkara_id', 'left');
-        $this->db->join('perkara_mediator pm', 'pm.perkara_id = p.id', 'left');
+        $this->db->join('perkara_mediator pm', 'pm.perkara_id = p.id AND pm.is_active = 1', 'left');
         $this->db->join('mediators m', 'm.id = pm.mediator_id', 'left');
         $this->db->join('users u', 'u.id = p.pp_id', 'left');
         $this->db->where('p.id', $id);

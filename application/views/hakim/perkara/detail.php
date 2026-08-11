@@ -11,7 +11,8 @@
             <div>
                 <span class="text-xs text-blue-600 font-semibold tracking-wider uppercase"><?= htmlspecialchars($perkara->jenis_perkara) ?></span>
                 <h2 class="text-2xl font-bold text-gray-900 font-mono mt-1"><?= htmlspecialchars($perkara->nomor_perkara) ?></h2>
-                <p class="text-sm text-gray-500 mt-1">Majelis Hakim: <strong><?= htmlspecialchars($perkara->majelis_hakim ?? $perkara->nama_hakim ?? '—') ?></strong> · PP: <?= htmlspecialchars($perkara->nama_pp ?? '—') ?></p>
+                <?php $clean_hakim = str_replace(['</br>', '<br>', '<br/>', '<br />'], '; ', $perkara->majelis_hakim ?? $perkara->nama_hakim ?? '—'); ?>
+                <p class="text-sm text-gray-500 mt-1">Majelis Hakim: <strong><?= htmlspecialchars($clean_hakim) ?></strong> · PP: <?= htmlspecialchars($perkara->nama_pp ?? '—') ?></p>
             </div>
             <div class="text-right flex flex-col items-end">
                 <span class="text-xs text-gray-400 block mb-1">Status</span>
@@ -74,8 +75,23 @@
                             <?php foreach ($list as $p): ?>
                             <li class="p-2.5 bg-gray-50 rounded-lg text-xs">
                                 <p class="font-semibold text-gray-900"><?= htmlspecialchars($p->nama) ?></p>
-                                <?php if ($p->kuasa_hukum): ?>
-                                <p class="text-gray-500 mt-0.5">Kuasa: <?= htmlspecialchars($p->kuasa_hukum) ?></p>
+                                <?php if (!empty($p->kuasa_details)): ?>
+                                    <?php foreach ($p->kuasa_details as $kd): ?>
+                                    <div class="mt-1.5 p-2 bg-blue-50/80 border border-blue-100 rounded-lg text-[11px]">
+                                        <span class="font-bold text-blue-700 block mb-0.5">⚖️ Kuasa Hukum: <?= htmlspecialchars($kd->nama) ?></span>
+                                        <?php if (!empty($kd->email)): ?>
+                                        <p class="text-indigo-600 font-mono mt-0.5 flex items-center gap-1">✉️ <?= htmlspecialchars($kd->email) ?></p>
+                                        <?php endif; ?>
+                                        <?php if (!empty($kd->no_hp)): ?>
+                                        <p class="text-blue-600 font-mono mt-0.5 flex items-center gap-1">📱 <?= htmlspecialchars($kd->no_hp) ?></p>
+                                        <?php endif; ?>
+                                    </div>
+                                    <?php endforeach; ?>
+                                <?php elseif ($p->kuasa_hukum): ?>
+                                <div class="mt-1.5 p-2 bg-blue-50/80 border border-blue-100 rounded-lg text-[11px]">
+                                    <span class="font-bold text-blue-700 block mb-0.5">⚖️ Kuasa Hukum:</span>
+                                    <span class="text-gray-700 leading-tight block"><?= htmlspecialchars($p->kuasa_hukum) ?></span>
+                                </div>
                                 <?php endif; ?>
                                 <?php if ($p->email): ?>
                                 <p class="text-indigo-600 font-mono mt-0.5">✉️ <?= htmlspecialchars($p->email) ?></p>

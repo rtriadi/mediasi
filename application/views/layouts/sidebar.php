@@ -71,6 +71,7 @@ $nama_aplikasi = get_app_setting('nama_aplikasi', 'SIPO-MEDIASI');
 				<p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">Master Data & Config</p>
 				<div class="space-y-1">
 					<?php
+					nav_item_v2(site_url('pimpinan/dashboard'), 'Dashboard & Grafik', 'fa-solid fa-chart-pie', 'pimpinan/dashboard');
 					nav_item_v2(site_url('admin/master_user'), 'Kelola User', 'fa-solid fa-users-gear', 'admin/master_user');
 					nav_item_v2(site_url('admin/master_mediator'), 'Kelola Mediator', 'fa-solid fa-user-tie', 'admin/master_mediator');
 					nav_item_v2(site_url('admin/master_ruangan'), 'Kelola Ruangan', 'fa-solid fa-door-open', 'admin/master_ruangan');
@@ -89,8 +90,8 @@ $nama_aplikasi = get_app_setting('nama_aplikasi', 'SIPO-MEDIASI');
 				<p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">Panitera Pengganti</p>
 				<div class="space-y-1">
 					<?php
-					// nav_item_v2(site_url('pp/perkara/tambah'), 'Input Perkara Baru', 'fa-solid fa-file-circle-plus', 'pp/perkara/tambah');
 					nav_item_v2(site_url('pp/monitor'), 'Monitor Perkara', 'fa-solid fa-list-check', 'pp/monitor');
+					nav_item_v2(site_url('pimpinan/dashboard'), 'Grafik & Laporan', 'fa-solid fa-chart-pie', 'pimpinan/dashboard');
 					?>
 				</div>
 			</div>
@@ -102,6 +103,7 @@ $nama_aplikasi = get_app_setting('nama_aplikasi', 'SIPO-MEDIASI');
 				<div class="space-y-1">
 					<?php
 					nav_item_v2(site_url('hakim/perkara'), 'Semua Perkara', 'fa-solid fa-folder-tree', 'hakim/perkara');
+					nav_item_v2(site_url('pimpinan/dashboard'), 'Grafik & Laporan', 'fa-solid fa-chart-pie', 'pimpinan/dashboard');
 					?>
 				</div>
 			</div>

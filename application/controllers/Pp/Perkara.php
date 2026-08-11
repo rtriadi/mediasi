@@ -41,9 +41,12 @@ class Perkara extends MY_Controller {
                         $all_pihak[] = [
                             'jenis_pihak' => 'penggugat',
                             'nama'        => trim($p['nama']),
-                                                        'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
+                            'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
                             'email'       => trim($p['email'] ?? '') ?: null,
                             'urutan'      => $idx + 1,
+                            'kuasa_hukum' => trim($p['kuasa_hukum'] ?? '') ?: null,
+                            'kuasa_email' => trim($p['kuasa_email'] ?? '') ?: null,
+                            'kuasa_no_hp' => trim($p['kuasa_no_hp'] ?? '') ?: null,
                         ];
                     }
                 }
@@ -53,9 +56,12 @@ class Perkara extends MY_Controller {
                         $all_pihak[] = [
                             'jenis_pihak' => 'tergugat',
                             'nama'        => trim($p['nama']),
-                                                        'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
+                            'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
                             'email'       => trim($p['email'] ?? '') ?: null,
                             'urutan'      => $idx + 1,
+                            'kuasa_hukum' => trim($p['kuasa_hukum'] ?? '') ?: null,
+                            'kuasa_email' => trim($p['kuasa_email'] ?? '') ?: null,
+                            'kuasa_no_hp' => trim($p['kuasa_no_hp'] ?? '') ?: null,
                         ];
                     }
                 }
@@ -66,9 +72,12 @@ class Perkara extends MY_Controller {
                         $all_pihak[] = [
                             'jenis_pihak' => 'turut_tergugat',
                             'nama'        => trim($p['nama']),
-                                                        'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
+                            'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
                             'email'       => trim($p['email'] ?? '') ?: null,
                             'urutan'      => $idx + 1,
+                            'kuasa_hukum' => trim($p['kuasa_hukum'] ?? '') ?: null,
+                            'kuasa_email' => trim($p['kuasa_email'] ?? '') ?: null,
+                            'kuasa_no_hp' => trim($p['kuasa_no_hp'] ?? '') ?: null,
                         ];
                     }
                 }
@@ -108,31 +117,64 @@ class Perkara extends MY_Controller {
         if ($this->input->post('mediator_id')) {
             $mediator_id = $this->input->post('mediator_id');
 
-            // Save Perkara
-            $perkara_id = $this->M_perkara->insert($perkara_session['perkara']);
+            $this->db->trans_begin();
 
-            // Save Pihak-pihak
-            $pihak = array_map(function($p) use ($perkara_id) {
-                $p['perkara_id'] = $perkara_id;
-                return $p;
-            }, $perkara_session['pihak']);
-            $this->M_perkara->insert_pihak($pihak);
+            try {
+                // Save Perkara
+                $perkara_id = $this->M_perkara->insert($perkara_session['perkara']);
 
-            // Assign Mediator
-            $this->M_perkara->assign_mediator([
-                'perkara_id'  => $perkara_id,
-                'mediator_id' => $mediator_id,
-                'assigned_by' => $this->session->userdata('user_id'),
-            ]);
+                // Save Pihak-pihak & Kuasa Hukum
+                foreach ($perkara_session['pihak'] as $p_item) {
+                    $kuasa       = $p_item['kuasa_hukum'] ?? null;
+                    $kuasa_email = $p_item['kuasa_email'] ?? null;
+                    $kuasa_no_hp = $p_item['kuasa_no_hp'] ?? null;
+                    unset($p_item['kuasa_hukum'], $p_item['kuasa_email'], $p_item['kuasa_no_hp']);
+                    $p_item['perkara_id'] = $perkara_id;
 
-            // Kirim notifikasi ke mediator
-            $this->emailgateway->kirim_penugasan_mediator($perkara_id, $mediator_id);
-            $this->wagateway->kirim_penugasan_mediator($perkara_id, $mediator_id);
+                    $this->db->insert('perkara_pihak', $p_item);
+                    $pihak_id = $this->db->insert_id();
 
-            $this->session->unset_userdata('new_perkara');
-            $this->session->set_flashdata('success', 'Perkara dan penetapan mediator berhasil didaftarkan.');
-            redirect('pp/monitor');
-            return;
+                    if (!empty($kuasa) || !empty($kuasa_email) || !empty($kuasa_no_hp)) {
+                        $this->db->insert('perkara_kuasa', [
+                            'perkara_id' => $perkara_id,
+                            'pihak_id'   => $pihak_id,
+                            'nama'       => $kuasa ?: 'Kuasa Hukum',
+                            'email'      => $kuasa_email ?: null,
+                            'no_hp'      => $kuasa_no_hp ?: null,
+                        ]);
+                    }
+                }
+
+                // Assign Mediator
+                $this->M_perkara->assign_mediator([
+                    'perkara_id'  => $perkara_id,
+                    'mediator_id' => $mediator_id,
+                    'assigned_by' => $this->session->userdata('user_id'),
+                ]);
+
+                if ($this->db->trans_status() === FALSE) {
+                    $this->db->trans_rollback();
+                    $this->session->set_flashdata('error', 'Gagal mendaftarkan perkara. Terjadi kesalahan pada transaksi basis data.');
+                    redirect('pp/perkara/assign_mediator');
+                    return;
+                }
+
+                $this->db->trans_commit();
+
+                // Kirim notifikasi ke mediator
+                $this->emailgateway->kirim_penugasan_mediator($perkara_id, $mediator_id);
+                $this->wagateway->kirim_penugasan_mediator($perkara_id, $mediator_id);
+
+                $this->session->unset_userdata('new_perkara');
+                $this->session->set_flashdata('success', 'Perkara dan penetapan mediator berhasil didaftarkan.');
+                redirect('pp/monitor');
+                return;
+            } catch (Exception $e) {
+                $this->db->trans_rollback();
+                $this->session->set_flashdata('error', 'Gagal mendaftarkan perkara: ' . $e->getMessage());
+                redirect('pp/perkara/assign_mediator');
+                return;
+            }
         }
 
         $this->render('pp/perkara/assign_mediator', [
@@ -182,9 +224,12 @@ class Perkara extends MY_Controller {
                             'perkara_id'  => $id,
                             'jenis_pihak' => 'penggugat',
                             'nama'        => trim($p['nama']),
-                                                        'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
+                            'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
                             'email'       => trim($p['email'] ?? '') ?: null,
                             'urutan'      => $idx + 1,
+                            'kuasa_hukum' => trim($p['kuasa_hukum'] ?? '') ?: null,
+                            'kuasa_email' => trim($p['kuasa_email'] ?? '') ?: null,
+                            'kuasa_no_hp' => trim($p['kuasa_no_hp'] ?? '') ?: null,
                         ];
                     }
                 }
@@ -196,9 +241,12 @@ class Perkara extends MY_Controller {
                             'perkara_id'  => $id,
                             'jenis_pihak' => 'tergugat',
                             'nama'        => trim($p['nama']),
-                                                        'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
+                            'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
                             'email'       => trim($p['email'] ?? '') ?: null,
                             'urutan'      => $idx + 1,
+                            'kuasa_hukum' => trim($p['kuasa_hukum'] ?? '') ?: null,
+                            'kuasa_email' => trim($p['kuasa_email'] ?? '') ?: null,
+                            'kuasa_no_hp' => trim($p['kuasa_no_hp'] ?? '') ?: null,
                         ];
                     }
                 }
@@ -211,103 +259,143 @@ class Perkara extends MY_Controller {
                             'perkara_id'  => $id,
                             'jenis_pihak' => 'turut_tergugat',
                             'nama'        => trim($p['nama']),
-                                                        'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
+                            'no_hp'       => trim($p['no_hp'] ?? '') ?: null,
                             'email'       => trim($p['email'] ?? '') ?: null,
                             'urutan'      => $idx + 1,
+                            'kuasa_hukum' => trim($p['kuasa_hukum'] ?? '') ?: null,
+                            'kuasa_email' => trim($p['kuasa_email'] ?? '') ?: null,
+                            'kuasa_no_hp' => trim($p['kuasa_no_hp'] ?? '') ?: null,
                         ];
                     }
                 }
 
-                // Update data perkara
-                $this->M_perkara->update($id, [
-                    'nomor_perkara'     => $nomor_perkara,
-                    'jenis_perkara_id' => $this->input->post('jenis_perkara_id'),
-                    'nama_hakim'        => $this->input->post('nama_hakim', true),
-                    'tgl_batas_mediasi' => $this->input->post('tgl_batas_mediasi'),
-                ]);
+                $this->db->trans_begin();
 
-                $new_mediator_id = $this->input->post('mediator_id');
-                $old_mediator_id = $perkara->mediator_id ?? null;
+                try {
+                    // Update data perkara
+                    $this->M_perkara->update($id, [
+                        'nomor_perkara'     => $nomor_perkara,
+                        'jenis_perkara_id' => $this->input->post('jenis_perkara_id'),
+                        'nama_hakim'        => $this->input->post('nama_hakim', true),
+                        'tgl_batas_mediasi' => $this->input->post('tgl_batas_mediasi'),
+                    ]);
 
-                // Cek jika mediator berubah
-                if ($old_mediator_id && $new_mediator_id != $old_mediator_id) {
-                    $has_hasil = $this->db->get_where('hasil_mediasi', ['perkara_id' => $id])->row();
-                    if ($has_hasil || $perkara->status === 'selesai') {
-                        $this->session->set_flashdata('error', 'Mediator tidak dapat diganti karena perkara ini sudah memiliki Hasil Mediasi / Selesai.');
+                    $new_mediator_id = $this->input->post('mediator_id');
+                    $old_mediator_id = $perkara->mediator_id ?? null;
+
+                    // Cek jika mediator berubah
+                    if ($old_mediator_id && $new_mediator_id != $old_mediator_id) {
+                        $has_hasil = $this->db->get_where('hasil_mediasi', ['perkara_id' => $id])->row();
+                        if ($has_hasil || $perkara->status === 'selesai') {
+                            $this->db->trans_rollback();
+                            $this->session->set_flashdata('error', 'Mediator tidak dapat diganti karena perkara ini sudah memiliki Hasil Mediasi / Selesai.');
+                            redirect("pp/perkara/edit/{$id}");
+                            return;
+                        }
+
+                        // Assign mediator baru & catat log riwayat
+                        $this->M_perkara->assign_mediator([
+                            'perkara_id'  => $id,
+                            'mediator_id' => $new_mediator_id,
+                            'assigned_by' => $this->session->userdata('user_id'),
+                        ]);
+
+                        // Otomatis alihkan (takeover) semua sesi yang masih 'terjadwal' ke mediator baru
+                        $this->db->where('perkara_id', $id)
+                                 ->where('status_sesi', 'terjadwal')
+                                 ->update('sesi_mediasi', ['mediator_id' => $new_mediator_id]);
+
+                        // Kirim notifikasi ke mediator LAMA & BARU
+                        $this->emailgateway->kirim_penggantian_mediator($id, $old_mediator_id);
+                        $this->wagateway->kirim_penggantian_mediator($id, $old_mediator_id);
+                        $this->emailgateway->kirim_penugasan_mediator($id, $new_mediator_id);
+                        $this->wagateway->kirim_penugasan_mediator($id, $new_mediator_id);
+                    } elseif (!$old_mediator_id && $new_mediator_id) {
+                        // Penugasan pertama kali
+                        $this->M_perkara->assign_mediator([
+                            'perkara_id'  => $id,
+                            'mediator_id' => $new_mediator_id,
+                            'assigned_by' => $this->session->userdata('user_id'),
+                        ]);
+
+                        $this->emailgateway->kirim_penugasan_mediator($id, $new_mediator_id);
+                        $this->wagateway->kirim_penugasan_mediator($id, $new_mediator_id);
+                    }
+
+                    // Smart Sync Data Pihak & Kuasa Hukum
+                    $submitted_ids = [];
+                    foreach ($all_pihak as $p) {
+                        $pid         = $p['id'] ?? null;
+                        $kuasa       = $p['kuasa_hukum'] ?? null;
+                        $kuasa_email = $p['kuasa_email'] ?? null;
+                        $kuasa_no_hp = $p['kuasa_no_hp'] ?? null;
+                        unset($p['id'], $p['kuasa_hukum'], $p['kuasa_email'], $p['kuasa_no_hp']);
+
+                        if (!empty($pid)) {
+                            $this->db->where('id', $pid)->update('perkara_pihak', $p);
+                            $pihak_id = $pid;
+                        } else {
+                            $this->db->insert('perkara_pihak', $p);
+                            $pihak_id = $this->db->insert_id();
+                        }
+                        $submitted_ids[] = $pihak_id;
+
+                    }
+
+                    // Sync email & no_hp untuk setiap advokat / Kuasa Hukum secara individu
+                    $kuasa_post = $this->input->post('kuasa');
+                    if (!empty($kuasa_post) && is_array($kuasa_post)) {
+                        foreach ($kuasa_post as $kuasa_id => $k_data) {
+                            $this->db->where('id', $kuasa_id)->update('perkara_kuasa', [
+                                'email' => !empty($k_data['email']) ? trim($k_data['email']) : null,
+                                'no_hp' => !empty($k_data['no_hp']) ? trim($k_data['no_hp']) : null,
+                            ]);
+                        }
+                    }
+
+                    // Delete only pihak rows that were explicitly removed by PP in the edit form
+                    $this->db->where('perkara_id', $id);
+                    if (!empty($submitted_ids)) {
+                        $this->db->where_not_in('id', $submitted_ids);
+                    }
+                    $omitted_pihak = $this->db->get('perkara_pihak')->result();
+
+                    if (!empty($omitted_pihak)) {
+                        $omitted_ids = array_column($omitted_pihak, 'id');
+                        $this->db->where_in('pihak_id', $omitted_ids);
+                        $has_presensi = $this->db->count_all_results('sesi_kehadiran');
+
+                        if ($has_presensi > 0) {
+                            $this->db->trans_rollback();
+                            $this->session->set_flashdata('error', 'Gagal menyimpan: Salah satu pihak yang Anda hapus dari form sudah memiliki catatan presensi kehadiran sesi mediasi.');
+                            redirect("pp/perkara/edit/{$id}");
+                            return;
+                        }
+
+                        // Hapus kuasa dan pihak
+                        $this->db->where_in('pihak_id', $omitted_ids)->delete('perkara_kuasa');
+                        $this->db->where_in('id', $omitted_ids)->delete('perkara_pihak');
+                    }
+
+                    if ($this->db->trans_status() === FALSE) {
+                        $this->db->trans_rollback();
+                        $this->session->set_flashdata('error', 'Gagal memperbarui data perkara. Terjadi kesalahan pada transaksi basis data.');
                         redirect("pp/perkara/edit/{$id}");
                         return;
                     }
 
-                    // Assign mediator baru & catat log riwayat
-                    $this->M_perkara->assign_mediator([
-                        'perkara_id'  => $id,
-                        'mediator_id' => $new_mediator_id,
-                        'assigned_by' => $this->session->userdata('user_id'),
-                    ]);
+                    $this->db->trans_commit();
 
-                    // Otomatis alihkan (takeover) semua sesi yang masih 'terjadwal' ke mediator baru
-                    $this->db->where('perkara_id', $id)
-                             ->where('status_sesi', 'terjadwal')
-                             ->update('sesi_mediasi', ['mediator_id' => $new_mediator_id]);
+                    $this->session->set_flashdata('success', 'Data perkara dan pihak berhasil diperbarui.');
+                    redirect("pp/monitor/detail/{$id}");
+                    return;
 
-                    // Kirim notifikasi ke mediator LAMA (pemberhentian penugasan)
-                    $this->emailgateway->kirim_penggantian_mediator($id, $old_mediator_id);
-                    $this->wagateway->kirim_penggantian_mediator($id, $old_mediator_id);
-
-                    // Kirim notifikasi ke mediator BARU (penugasan baru)
-                    $this->emailgateway->kirim_penugasan_mediator($id, $new_mediator_id);
-                    $this->wagateway->kirim_penugasan_mediator($id, $new_mediator_id);
-                } elseif (!$old_mediator_id && $new_mediator_id) {
-                    // Penugasan pertama kali (jika sebelumnya belum ada)
-                    $this->M_perkara->assign_mediator([
-                        'perkara_id'  => $id,
-                        'mediator_id' => $new_mediator_id,
-                        'assigned_by' => $this->session->userdata('user_id'),
-                    ]);
-
-                    $this->emailgateway->kirim_penugasan_mediator($id, $new_mediator_id);
-                    $this->wagateway->kirim_penugasan_mediator($id, $new_mediator_id);
+                } catch (Exception $e) {
+                    $this->db->trans_rollback();
+                    $this->session->set_flashdata('error', 'Gagal memperbarui data: ' . $e->getMessage());
+                    redirect("pp/perkara/edit/{$id}");
+                    return;
                 }
-
-                // Smart Sync Data Pihak (Preserve IDs to prevent cascade deletion of attendance log)
-                $submitted_ids = [];
-                foreach ($all_pihak as $p) {
-                    $pid = $p['id'] ?? null;
-                    unset($p['id']);
-                    if (!empty($pid)) {
-                        $this->db->where('id', $pid)->update('perkara_pihak', $p);
-                        $submitted_ids[] = $pid;
-                    } else {
-                        $this->db->insert('perkara_pihak', $p);
-                        $submitted_ids[] = $this->db->insert_id();
-                    }
-                }
-
-                // Delete only pihak rows that were explicitly removed by PP in the edit form, provided they have no presensi logs
-                $this->db->where('perkara_id', $id);
-                if (!empty($submitted_ids)) {
-                    $this->db->where_not_in('id', $submitted_ids);
-                }
-                $omitted_pihak = $this->db->get('perkara_pihak')->result();
-
-                if (!empty($omitted_pihak)) {
-                    $omitted_ids = array_column($omitted_pihak, 'id');
-                    $this->db->where_in('pihak_id', $omitted_ids);
-                    $has_presensi = $this->db->count_all_results('sesi_kehadiran');
-
-                    if ($has_presensi > 0) {
-                        $this->session->set_flashdata('error', 'Gagal menyimpan: Salah satu pihak yang Anda hapus dari form sudah memiliki catatan presensi kehadiran sesi mediasi.');
-                        redirect("pp/perkara/edit/{$id}");
-                        return;
-                    }
-
-                    // Aman dihapus karena belum pernah ada presensi kehadiran untuk pihak tersebut
-                    $this->db->where_in('id', $omitted_ids)->delete('perkara_pihak');
-                }
-
-                $this->session->set_flashdata('success', 'Data perkara dan pihak berhasil diperbarui.');
-                redirect("pp/monitor/detail/{$id}");
-                return;
             }
         }
 

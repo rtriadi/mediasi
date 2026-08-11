@@ -169,10 +169,22 @@ class EmailGateway {
         </div>
         ";
 
+        $sent_emails = [];
         foreach ($pihak as $p) {
             $email = trim($p->email ?? '');
-            if (!empty($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            if (!empty($email) && filter_var($email, FILTER_VALIDATE_EMAIL) && !in_array($email, $sent_emails)) {
                 $this->kirim($email, $subject, $html_body, $perkara_id);
+                $sent_emails[] = $email;
+            }
+        }
+
+        // Kirim notifikasi ke Kuasa Hukum jika memiliki email sendiri
+        $kuasa_list = $this->CI->M_perkara->get_kuasa($perkara_id);
+        foreach ($kuasa_list as $k) {
+            $k_email = trim($k->email ?? '');
+            if (!empty($k_email) && filter_var($k_email, FILTER_VALIDATE_EMAIL) && !in_array($k_email, $sent_emails)) {
+                $this->kirim($k_email, $subject, $html_body, $perkara_id);
+                $sent_emails[] = $k_email;
             }
         }
     }
@@ -269,7 +281,7 @@ class EmailGateway {
                 <table style='width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 13px;'>
                     <tr><td style='padding: 8px; border-bottom: 1px solid #f1f5f9; color: #64748b; width: 160px;'>Nomor Perkara</td><td style='padding: 8px; border-bottom: 1px solid #f1f5f9; font-weight: bold;'>{$perkara->nomor_perkara}</td></tr>
                     <tr><td style='padding: 8px; border-bottom: 1px solid #f1f5f9; color: #64748b;'>Jenis Perkara</td><td style='padding: 8px; border-bottom: 1px solid #f1f5f9;'>" . htmlspecialchars($perkara->jenis_perkara ?? '-') . "</td></tr>
-                    <tr><td style='padding: 8px; border-bottom: 1px solid #f1f5f9; color: #64748b;'>Hakim</td><td style='padding: 8px; border-bottom: 1px solid #f1f5f9;'>" . htmlspecialchars($perkara->nama_hakim ?? '-') . "</td></tr>
+                    <tr><td style='padding: 8px; border-bottom: 1px solid #f1f5f9; color: #64748b;'>Majelis Hakim</td><td style='padding: 8px; border-bottom: 1px solid #f1f5f9;'>" . htmlspecialchars($perkara->nama_hakim ?? '-') . "</td></tr>
                     <tr><td style='padding: 8px; border-bottom: 1px solid #f1f5f9; color: #64748b;'>Batas Waktu Mediasi</td><td style='padding: 8px; border-bottom: 1px solid #f1f5f9; font-weight: bold; color: #dc2626;'>{$tgl_batas}</td></tr>
                 </table>
                 <div style='margin: 25px 0 15px 0; text-align: center;'>

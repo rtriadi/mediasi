@@ -1,4 +1,4 @@
-﻿<!-- Header -->
+<!-- Header -->
 <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
     <div>
         <h2 class="text-2xl font-extrabold font-heading text-slate-900 tracking-tight">Perkara Mediasi Saya</h2>
@@ -60,15 +60,8 @@
                     <td class="px-4 py-3.5 text-slate-400"><?= $no++ ?></td>
                     <td class="px-4 py-3.5 font-bold text-slate-900 font-mono"><?= htmlspecialchars($p->nomor_perkara) ?></td>
                     <td class="px-4 py-3.5 text-slate-700 font-medium"><?= htmlspecialchars($p->jenis_perkara) ?></td>
-                    <td class="px-4 py-3.5 font-mono text-xs">
-                        <?php
-                        $sisa_hari = ceil((strtotime($p->tgl_batas_mediasi) - time()) / 86400);
-                        $is_urgent = ($p->status !== 'selesai' && $sisa_hari < 7);
-                        ?>
-                        <span class="<?= $is_urgent ? 'text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded border border-rose-200' : 'text-slate-600' ?>">
-                            <?= date('d/m/Y', strtotime($p->tgl_batas_mediasi)) ?>
-                            <?= $is_urgent ? " (Sisa {$sisa_hari} hr)" : '' ?>
-                        </span>
+                    <td class="px-4 py-3.5 whitespace-nowrap">
+                        <?= get_deadline_badge($p->tgl_batas_mediasi, $p->status) ?>
                     </td>
                     <td class="px-4 py-3.5">
                         <?php if ($p->status === 'menunggu'): ?>

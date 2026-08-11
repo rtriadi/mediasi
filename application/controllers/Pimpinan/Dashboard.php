@@ -6,7 +6,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 class Dashboard extends MY_Controller {
 
-    protected $role_required = ['pimpinan', 'admin', 'hakim'];
+    protected $role_required = ['pimpinan', 'admin', 'hakim', 'pp', 'mediator'];
 
     public function __construct() {
         parent::__construct();

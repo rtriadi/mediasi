@@ -136,6 +136,8 @@ class SippApi {
                 continue;
             }
 
+            $this->CI->db->trans_begin();
+
             try {
                 $nomor_perkara = trim($item['nomor_perkara']);
 
@@ -161,22 +163,30 @@ class SippApi {
                 $clean_hakim = $this->clean_majelis_text($majelis_raw);
 
                 // 4. Tanggal Penetapan & Batas Mediasi
-                $tgl_penetapan = !empty($item['tanggal_penetapan_mediator']) ? date('Y-m-d', strtotime($item['tanggal_penetapan_mediator'])) : date('Y-m-d');
-                $tgl_batas     = date('Y-m-d', strtotime($tgl_penetapan . " +{$batas_hari} days"));
+                $tgl_penetapan = !empty($item['tanggal_penetapan_mediator']) ? date('Y-m-d', strtotime($item['tanggal_penetapan_mediator'])) : null;
+                $tgl_batas     = $tgl_penetapan ? date('Y-m-d', strtotime($tgl_penetapan . " +{$batas_hari} days")) : date('Y-m-d', strtotime("+{$batas_hari} days"));
 
-                // Pengecekan Perkara Eksisting
-                $existing = $this->CI->db->get_where('perkara', ['nomor_perkara' => $nomor_perkara])->row();
+                // Pengecekan Perkara Eksisting & Penunjukan Mediator di perkara_mediator
+                $existing    = $this->CI->db->get_where('perkara', ['nomor_perkara' => $nomor_perkara])->row();
+                $existing_pm = $existing ? $this->CI->db->get_where('perkara_mediator', ['perkara_id' => $existing->id, 'is_active' => 1])->row() : null;
+
+                // PENGECEKAN UTAMA: Jika Nomor Perkara & Tanggal Penetapan Mediator (di perkara_mediator) SAMA -> SKIP RE-SYNC!
+                if ($existing && $existing_pm && !empty($existing_pm->tgl_penetapan) && $tgl_penetapan && $existing_pm->tgl_penetapan === $tgl_penetapan) {
+                    $this->CI->db->trans_rollback();
+                    $skipped++;
+                    $details[] = "Perkara {$nomor_perkara} (Penetapan: {$tgl_penetapan}) tidak berubah (di-skip).";
+                    continue;
+                }
 
                 $data_perkara = [
-                    'nomor_perkara'              => $nomor_perkara,
-                    'perkara_id_sipp'            => isset($item['perkara_id']) ? $item['perkara_id'] : null,
-                    'jenis_perkara_id'           => $jenis_perkara_id,
-                    'majelis_hakim'              => $majelis_raw,
-                    'majelis_id'                 => isset($item['majelis_id']) ? $item['majelis_id'] : null,
-                    'panitera_pengganti_id_sipp' => isset($item['panitera_pengganti_id']) ? $item['panitera_pengganti_id'] : null,
-                    'panitera_sidang'            => isset($item['panitera_sidang']) ? $item['panitera_sidang'] : null,
-                    'tgl_batas_mediasi'          => $tgl_batas,
-                    'pp_id'                      => $pp_id,
+                    'nomor_perkara'     => $nomor_perkara,
+                    'perkara_id_sipp'   => isset($item['perkara_id']) ? $item['perkara_id'] : null,
+                    'jenis_perkara_id'  => $jenis_perkara_id,
+                    'majelis_hakim'     => $clean_hakim,
+                    'majelis_id'        => isset($item['majelis_id']) ? $item['majelis_id'] : null,
+                    'panitera_sidang'   => isset($item['panitera_sidang']) ? $item['panitera_sidang'] : null,
+                    'tgl_batas_mediasi' => $tgl_batas,
+                    'pp_id'             => $pp_id,
                 ];
 
                 if ($existing) {
@@ -195,12 +205,20 @@ class SippApi {
                     $this->process_mediator_assignment($perkara_id, $item, $pp_id);
                 }
 
-                // 6. Handling Parsing Pihak & Kuasa Hukum
+                // 6. Handling Parsing Pihak & Kuasa Hukum secara Smart Upsert (Tanpa Delete)
                 $this->process_pihak_parsing($perkara_id, $item);
 
-                $details[] = "Perkara {$nomor_perkara} berhasil diproses.";
+                if ($this->CI->db->trans_status() === FALSE) {
+                    $this->CI->db->trans_rollback();
+                    $failed++;
+                    log_message('error', "Gagal sync perkara {$nomor_perkara}: Transaction status FALSE");
+                } else {
+                    $this->CI->db->trans_commit();
+                    $details[] = "Perkara {$nomor_perkara} berhasil diproses.";
+                }
 
             } catch (Exception $e) {
+                $this->CI->db->trans_rollback();
                 $failed++;
                 log_message('error', "Gagal sync perkara {$item['nomor_perkara']}: " . $e->getMessage());
             }
@@ -276,12 +294,19 @@ class SippApi {
         $status_mediator = isset($item['status_mediator']) ? strtoupper(trim($item['status_mediator'])) : 'N';
         $jenis_mediator  = ($status_mediator === 'H') ? 'hakim' : 'non_hakim';
 
-        // Cari atau buat mediator
-        $id_mediator_api = isset($item['id_mediator']) ? trim($item['id_mediator']) : null;
+        // Extract id_mediator / mediator_id dari API
+        $id_mediator_api = !empty($item['id_mediator']) ? trim($item['id_mediator']) : (!empty($item['mediator_id']) ? trim($item['mediator_id']) : null);
+
         $mediator = null;
         if (!empty($id_mediator_api)) {
+            // 1. Match berdasarkan id_mediator dari API
             $mediator = $this->CI->db->get_where('mediators', ['id_mediator' => $id_mediator_api])->row();
+            // 2. Match berdasarkan ID lokal jika id_mediator_api numerik
+            if (!$mediator && is_numeric($id_mediator_api)) {
+                $mediator = $this->CI->db->get_where('mediators', ['id' => (int)$id_mediator_api])->row();
+            }
         }
+        // 3. Fallback match berdasarkan nama
         if (!$mediator) {
             $mediator = $this->CI->db->get_where('mediators', ['nama' => $nama_mediator])->row();
         }
@@ -305,35 +330,161 @@ class SippApi {
         // Check penunjukan perkara_mediator
         $pm = $this->CI->db->get_where('perkara_mediator', ['perkara_id' => $perkara_id])->row();
         if (!$pm) {
+            $tgl_assign = !empty($item['tanggal_penetapan_mediator']) ? date('Y-m-d', strtotime($item['tanggal_penetapan_mediator'])) : date('Y-m-d');
             $this->CI->db->insert('perkara_mediator', [
                 'perkara_id'      => $perkara_id,
                 'mediator_id'     => $mediator_id,
-                'tgl_penetapan'   => !empty($item['tanggal_penetapan_mediator']) ? date('Y-m-d', strtotime($item['tanggal_penetapan_mediator'])) : date('Y-m-d'),
+                'tgl_penetapan'   => $tgl_assign,
                 'status_mediator' => $status_mediator,
                 'is_active'       => 1
             ]);
 
+            // Record log riwayat penugasan jika tabel log ada
+            if ($this->CI->db->table_exists('perkara_mediator_log')) {
+                $this->CI->db->insert('perkara_mediator_log', [
+                    'perkara_id'  => $perkara_id,
+                    'mediator_id' => $mediator_id,
+                    'assigned_by' => $assigned_by_pp_id,
+                    'tgl_assign'  => date('Y-m-d H:i:s', strtotime($tgl_assign)),
+                ]);
+            }
+
             // Update status perkara ke 'proses'
             $this->CI->db->where('id', $perkara_id)->update('perkara', ['status' => 'proses']);
+
+            // Kirim notifikasi penugasan ke Mediator (WA/Email jika memiliki no_hp/email)
+            $this->trigger_assignment_notification($perkara_id, $mediator_id);
+        } else if ($pm->mediator_id != $mediator_id) {
+            // Jika terjadi perubahan penunjukan mediator
+            $old_mediator_id = $pm->mediator_id;
+            $this->CI->db->where('id', $pm->id)->update('perkara_mediator', [
+                'mediator_id'     => $mediator_id,
+                'status_mediator' => $status_mediator,
+                'updated_at'      => date('Y-m-d H:i:s')
+            ]);
+
+            // Record log penggantian mediator
+            if ($this->CI->db->table_exists('perkara_mediator_log')) {
+                $this->CI->db->insert('perkara_mediator_log', [
+                    'perkara_id'  => $perkara_id,
+                    'mediator_id' => $mediator_id,
+                    'assigned_by' => $assigned_by_pp_id,
+                    'tgl_assign'  => date('Y-m-d H:i:s'),
+                ]);
+            }
+
+            // Kirim notifikasi ke mediator baru & mediator lama
+            $this->trigger_assignment_notification($perkara_id, $mediator_id, $old_mediator_id);
         }
     }
 
     /**
-     * Memproses parsing string pihak dan kuasa dari API SIPP
+     * Helper untuk memicu notifikasi penugasan mediator via WA dan Email jika mediator memiliki no_hp atau email
+     */
+    private function trigger_assignment_notification($perkara_id, $mediator_id, $old_mediator_id = null) {
+        if (!isset($this->CI->wagateway)) {
+            $this->CI->load->library('WaGateway');
+        }
+        if (!isset($this->CI->emailgateway)) {
+            $this->CI->load->library('EmailGateway');
+        }
+
+        // Kirim notifikasi penugasan ke mediator baru
+        if (!empty($mediator_id)) {
+            $this->CI->wagateway->kirim_penugasan_mediator($perkara_id, $mediator_id);
+            $this->CI->emailgateway->kirim_penugasan_mediator($perkara_id, $mediator_id);
+        }
+
+        // Kirim notifikasi penggantian ke mediator lama (jika ada)
+        if (!empty($old_mediator_id)) {
+            $this->CI->wagateway->kirim_penggantian_mediator($perkara_id, $old_mediator_id);
+            $this->CI->emailgateway->kirim_penggantian_mediator($perkara_id, $old_mediator_id);
+        }
+    }
+
+    /**
+     * Memproses parsing string pihak dan kuasa dari API SIPP secara Smart Upsert (Tanpa Delete)
      */
     private function process_pihak_parsing($perkara_id, $item) {
-        // Hapus data pihak & kuasa lama saat re-sync perkara ini
-        $this->CI->db->where('perkara_id', $perkara_id)->delete('perkara_pihak');
-        $this->CI->db->where('perkara_id', $perkara_id)->delete('perkara_kuasa');
-
         $pihak_penggugat_id = null;
+        $pihak_tergugat_id  = null;
 
-        // 1. Parsing Penggugat
+        // 1. Parsing Penggugat (Upsert)
         if (!empty($item['penggugat'])) {
             $parsed_p = $this->parse_pihak_detail($item['penggugat']);
+            $pihak_penggugat_id = $this->upsert_pihak($perkara_id, 'penggugat', $parsed_p);
+        }
+
+        // 2. Parsing Tergugat (Upsert)
+        if (!empty($item['tergugat'])) {
+            $parsed_t = $this->parse_pihak_detail($item['tergugat']);
+            $pihak_tergugat_id = $this->upsert_pihak($perkara_id, 'tergugat', $parsed_t);
+        }
+
+        // 3. Parsing Kuasa Hukum Penggugat / Pemohon khusus dari API jika ada
+        $kuasa_p_raw = !empty($item['kuasa_penggugat']) ? $item['kuasa_penggugat'] : (!empty($item['kuasa_pemohon']) ? $item['kuasa_pemohon'] : null);
+        if ($kuasa_p_raw && $pihak_penggugat_id) {
+            $this->insert_kuasa_from_raw($perkara_id, $pihak_penggugat_id, $kuasa_p_raw);
+        }
+
+        // 4. Parsing Kuasa Hukum Tergugat / Termohon khusus dari API jika ada
+        $kuasa_t_raw = !empty($item['kuasa_tergugat']) ? $item['kuasa_tergugat'] : (!empty($item['kuasa_termohon']) ? $item['kuasa_termohon'] : null);
+        if ($kuasa_t_raw && $pihak_tergugat_id) {
+            $this->insert_kuasa_from_raw($perkara_id, $pihak_tergugat_id, $kuasa_t_raw);
+        }
+
+        // 5. Parsing General Kuasa Field ($item['kuasa']) jika khusus tidak ada
+        if (!empty($item['kuasa']) && empty($kuasa_p_raw) && empty($kuasa_t_raw)) {
+            $kuasa_items = $this->split_kuasa_names($item['kuasa']);
+            foreach ($kuasa_items as $kuasa_raw) {
+                if (empty(trim($kuasa_raw))) continue;
+
+                $target_pihak_id = $pihak_penggugat_id;
+                if (preg_match('/(?:tergugat|termohon)/i', $kuasa_raw) && $pihak_tergugat_id) {
+                    $target_pihak_id = $pihak_tergugat_id;
+                }
+
+                $clean_kuasa = preg_replace('/^(?:Kuasa\s+)?(?:Penggugat|Pemohon|Tergugat|Termohon):\s*/i', '', $kuasa_raw);
+                $parsed_k = $this->parse_pihak_detail($clean_kuasa);
+                if (empty($parsed_k['nama']) || $parsed_k['nama'] === 'Tidak Diketahui') continue;
+
+                $this->upsert_kuasa($perkara_id, $target_pihak_id, $parsed_k);
+            }
+        }
+    }
+
+    /**
+     * Smart Upsert Pihak Perkara (Insert baru atau Update data eksisting tanpa menimpa Email/No. HP)
+     */
+    private function upsert_pihak($perkara_id, $jenis_pihak, $parsed_p) {
+        if (empty($parsed_p['nama']) || $parsed_p['nama'] === 'Tidak Diketahui') return null;
+
+        $existing = $this->CI->db->get_where('perkara_pihak', [
+            'perkara_id'  => $perkara_id,
+            'jenis_pihak' => $jenis_pihak,
+            'nama'        => $parsed_p['nama']
+        ])->row();
+
+        if ($existing) {
+            $update_data = [
+                'nik'        => $parsed_p['nik'] ?: $existing->nik,
+                'ttl'        => $parsed_p['ttl'] ?: $existing->ttl,
+                'pekerjaan'  => $parsed_p['pekerjaan'] ?: $existing->pekerjaan,
+                'pendidikan' => $parsed_p['pendidikan'] ?: $existing->pendidikan,
+                'alamat'     => $parsed_p['alamat'] ?: $existing->alamat,
+            ];
+            if (empty($existing->email) && !empty($parsed_p['email'])) {
+                $update_data['email'] = $parsed_p['email'];
+            }
+            if (empty($existing->no_hp) && !empty($parsed_p['no_hp'])) {
+                $update_data['no_hp'] = $parsed_p['no_hp'];
+            }
+            $this->CI->db->where('id', $existing->id)->update('perkara_pihak', $update_data);
+            return $existing->id;
+        } else {
             $this->CI->db->insert('perkara_pihak', [
                 'perkara_id'  => $perkara_id,
-                'jenis_pihak' => 'penggugat',
+                'jenis_pihak' => $jenis_pihak,
                 'nama'        => $parsed_p['nama'],
                 'nik'         => $parsed_p['nik'],
                 'ttl'         => $parsed_p['ttl'],
@@ -344,54 +495,125 @@ class SippApi {
                 'no_hp'       => $parsed_p['no_hp'],
                 'urutan'      => 1
             ]);
-            $pihak_penggugat_id = $this->CI->db->insert_id();
+            return $this->CI->db->insert_id();
         }
+    }
 
-        // 2. Parsing Tergugat
-        if (!empty($item['tergugat'])) {
-            $parsed_t = $this->parse_pihak_detail($item['tergugat']);
-            $this->CI->db->insert('perkara_pihak', [
-                'perkara_id'  => $perkara_id,
-                'jenis_pihak' => 'tergugat',
-                'nama'        => $parsed_t['nama'],
-                'nik'         => $parsed_t['nik'],
-                'ttl'         => $parsed_t['ttl'],
-                'pekerjaan'   => $parsed_t['pekerjaan'],
-                'pendidikan'  => $parsed_t['pendidikan'],
-                'alamat'      => $parsed_t['alamat'],
-                'email'       => $parsed_t['email'],
-                'no_hp'       => $parsed_t['no_hp'],
-                'urutan'      => 1
-            ]);
-        }
+    /**
+     * Smart Upsert Kuasa Hukum (Insert baru atau Update data eksisting tanpa menimpa Email/No. HP)
+     */
+    private function upsert_kuasa($perkara_id, $pihak_id, $parsed_k) {
+        if (empty($parsed_k['nama']) || $parsed_k['nama'] === 'Tidak Diketahui') return null;
 
-        // 3. Parsing Kuasa Hukum (Bisa banyak pengacara dipisah '|')
-        if (!empty($item['kuasa'])) {
-            $kuasa_items = explode('|', $item['kuasa']);
-            foreach ($kuasa_items as $kuasa_raw) {
-                if (empty(trim($kuasa_raw))) continue;
+        $existing = $this->CI->db->get_where('perkara_kuasa', [
+            'perkara_id' => $perkara_id,
+            'pihak_id'   => $pihak_id,
+            'nama'       => $parsed_k['nama']
+        ])->row();
 
-                $parsed_k = $this->parse_pihak_detail($kuasa_raw);
-                if (empty($parsed_k['nama']) || $parsed_k['nama'] === 'Tidak Diketahui') continue;
-
-                $this->CI->db->insert('perkara_kuasa', [
-                    'perkara_id' => $perkara_id,
-                    'pihak_id'   => $pihak_penggugat_id, // Default ke penggugat, bisa disesuaikan di UI oleh PP
-                    'nama'       => $parsed_k['nama'],
-                    'nik'        => $parsed_k['nik'],
-                    'ttl'        => $parsed_k['ttl'],
-                    'pekerjaan'  => $parsed_k['pekerjaan'] ?: 'Pengacara',
-                    'alamat'     => $parsed_k['alamat'],
-                    'email'      => $parsed_k['email'],
-                    'no_hp'      => $parsed_k['no_hp']
-                ]);
+        if ($existing) {
+            $update_data = [
+                'nik'       => $parsed_k['nik'] ?: $existing->nik,
+                'ttl'       => $parsed_k['ttl'] ?: $existing->ttl,
+                'pekerjaan' => $parsed_k['pekerjaan'] ?: $existing->pekerjaan,
+                'alamat'    => $parsed_k['alamat'] ?: $existing->alamat,
+            ];
+            if (empty($existing->email) && !empty($parsed_k['email'])) {
+                $update_data['email'] = $parsed_k['email'];
             }
+            if (empty($existing->no_hp) && !empty($parsed_k['no_hp'])) {
+                $update_data['no_hp'] = $parsed_k['no_hp'];
+            }
+            $this->CI->db->where('id', $existing->id)->update('perkara_kuasa', $update_data);
+            return $existing->id;
+        } else {
+            $this->CI->db->insert('perkara_kuasa', [
+                'perkara_id' => $perkara_id,
+                'pihak_id'   => $pihak_id,
+                'nama'       => $parsed_k['nama'],
+                'nik'        => $parsed_k['nik'],
+                'ttl'        => $parsed_k['ttl'],
+                'pekerjaan'  => $parsed_k['pekerjaan'] ?: 'Pengacara',
+                'alamat'     => $parsed_k['alamat'],
+                'email'      => $parsed_k['email'],
+                'no_hp'      => $parsed_k['no_hp']
+            ]);
+            return $this->CI->db->insert_id();
+        }
+    }
+
+    /**
+     * Helper untuk memecah string Kuasa Hukum yang berisi banyak pengacara dari SIPP API.
+     * Mencegah pemecahan koma pada alamat atau detail di dalam kurung.
+     */
+    /**
+     * Helper untuk memecah string Kuasa Hukum yang berisi banyak pengacara dari SIPP API.
+     * Menggunakan pemisah resmi SIPP API (' | ', '|', ';', newline, atau prefix 'Nama:')
+     */
+    private function split_kuasa_names($raw) {
+        if (empty($raw)) return [];
+
+        $raw = trim($raw);
+
+        // Jika string berisi kurung detail (NIK: ... # Alamat: ...) atau terdapat prefix "Nama:"
+        if (preg_match('/Nama:\s*/i', $raw) || preg_match('/\(.*?(?:NIK|TTL|Alamat|Pekerjaan):.*?\)/i', $raw) || strpos($raw, '#') !== false) {
+            // Split berdasarkan pemisah resmi antar advokat: ' | ', '|', ';', newline, atau jika ada 'Nama:' baru
+            $blocks = preg_split('/(?:\s*\|\s*|\s*;\s*|[\r\n]+|(?=\bNama:\s*))/i', $raw);
+            $results = [];
+            foreach ($blocks as $b) {
+                $b = trim($b);
+                if (empty($b)) continue;
+                // Pastikan kurung penutup dipulihkan jika terpotong
+                if (strpos($b, '(') !== false && strpos($b, ')') === false) {
+                    $b .= ')';
+                }
+                $results[] = $b;
+            }
+            return array_filter($results);
+        }
+
+        // Jika string polos (tanpa kurung NIK/#)
+        $raw_clean = str_replace(['|', ';', "\r\n", "\n"], ',', $raw);
+        $tokens = preg_split('/,\s*(?=[A-Z0-9\.\s]{3,})/i', $raw_clean);
+        $names = [];
+        $current_name = '';
+        foreach ($tokens as $token) {
+            $token = trim($token);
+            if (empty($token)) continue;
+            if (empty($current_name)) {
+                $current_name = $token;
+            } else {
+                if (preg_match('/^(?:S\.?H\.?|M\.?H\.?|S\.?Ag\.?|S\.?H\.?I\.?|M\.?Ag\.?|M\.?H\.I\.?|S\.?P\.?d\.?|S\.?E\.?|C\.?L\.?A\.?|C\.?T\.?C\.?|C\.?P\.?L\.?|C\.?P\.?A\.?r\.?b\.?)$/i', $token)) {
+                    $current_name .= ', ' . $token;
+                } else {
+                    $names[] = trim(preg_replace('/^(?:Kuasa\s+)?(?:Penggugat|Pemohon|Tergugat|Termohon):\s*/i', '', $current_name));
+                    $current_name = $token;
+                }
+            }
+        }
+        if (!empty($current_name)) {
+            $names[] = trim(preg_replace('/^(?:Kuasa\s+)?(?:Penggugat|Pemohon|Tergugat|Termohon):\s*/i', '', $current_name));
+        }
+        return array_filter($names);
+    }
+
+    /**
+     * Helper untuk insert kuasa dari raw string secara Smart Upsert
+     */
+    private function insert_kuasa_from_raw($perkara_id, $pihak_id, $raw) {
+        $kuasa_items = $this->split_kuasa_names($raw);
+        foreach ($kuasa_items as $k_item) {
+            if (empty(trim($k_item))) continue;
+            $parsed_k = $this->parse_pihak_detail($k_item);
+            if (empty($parsed_k['nama']) || $parsed_k['nama'] === 'Tidak Diketahui') continue;
+
+            $this->upsert_kuasa($perkara_id, $pihak_id, $parsed_k);
         }
     }
 
     /**
      * Helper Parsing Rinci String Format:
-     * "Nama: XXX (NIK: YYY# TTL: ZZZ# Pekerjaan: AAA# Pendidikan: BBB# Alamat: CCC# Email: DDD# No HP: EEE)"
+     * "Nama Kuasa, S.H. (NIK: YYY# TTL: ZZZ# Pekerjaan: AAA# Pendidikan: BBB# Alamat: CCC# Email: DDD# No HP: EEE)"
      */
     private function parse_pihak_detail($raw) {
         $data = [
@@ -407,53 +629,58 @@ class SippApi {
 
         if (empty($raw)) return $data;
 
-        // Extract Nama
-        if (preg_match('/Nama:\s*([^(#]+)/i', $raw, $m)) {
-            $data['nama'] = trim($m[1]);
-        } else {
-            $data['nama'] = trim(strip_tags($raw));
+        // 1. Extract Nama (Ambil teks SEBELUM kurung detail '(' atau 'NIK:')
+        $clean_nama = preg_replace('/\s*\(.*$/s', '', $raw);
+        $clean_nama = preg_replace('/^(?:Nama:\s*|(?:Kuasa\s+)?(?:Penggugat|Pemohon|Tergugat|Termohon):\s*)/i', '', $clean_nama);
+        $clean_nama = trim($clean_nama, " \t\n\r\0\x0B,;");
+
+        // Filter jika nama mengandung kata alamat/detail dan bukan nama orang
+        if (empty($clean_nama) || preg_match('/^(?:Kecamatan|Kelurahan|Kabupaten|Desa|Kota|Provinsi|JL\.|NIK:|TTL:|Alamat:)/i', $clean_nama)) {
+            return $data;
         }
 
-        // Extract NIK
+        $data['nama'] = $clean_nama;
+
+        // 2. Extract NIK
         if (preg_match('/NIK:\s*([^#\)]+)/i', $raw, $m)) {
             $val = trim($m[1]);
             if ($val !== '-' && !empty($val)) $data['nik'] = $val;
         }
 
-        // Extract TTL
+        // 3. Extract TTL
         if (preg_match('/TTL:\s*([^#\)]+)/i', $raw, $m)) {
             $val = trim($m[1]);
             if ($val !== '-' && $val !== '00-00-0000' && !empty($val)) $data['ttl'] = $val;
         }
 
-        // Extract Pekerjaan
+        // 4. Extract Pekerjaan
         if (preg_match('/Pekerjaan:\s*([^#\)]+)/i', $raw, $m)) {
             $val = trim($m[1]);
             if ($val !== '-' && !empty($val)) $data['pekerjaan'] = $val;
         }
 
-        // Extract Pendidikan
+        // 5. Extract Pendidikan
         if (preg_match('/Pendidikan:\s*([^#\)]+)/i', $raw, $m)) {
             $val = trim($m[1]);
             if ($val !== '-' && !empty($val)) $data['pendidikan'] = $val;
         }
 
-        // Extract Alamat
+        // 6. Extract Alamat
         if (preg_match('/Alamat:\s*([^#\)]+)/i', $raw, $m)) {
             $val = trim($m[1]);
             if ($val !== '-' && !empty($val)) $data['alamat'] = $val;
         }
 
-        // Extract Email
-        if (preg_match('/Email:\s*([^#\)]+)/i', $raw, $m)) {
+        // 7. Extract Email
+        if (preg_match('/Email:\s*([^#\)\s]+)/i', $raw, $m)) {
             $val = trim($m[1]);
             if ($val !== '-' && !empty($val) && filter_var($val, FILTER_VALIDATE_EMAIL)) {
                 $data['email'] = $val;
             }
         }
 
-        // Extract No HP
-        if (preg_match('/(?:No HP|HP|Telepon|WA):\s*([^#\)]+)/i', $raw, $m)) {
+        // 8. Extract No HP
+        if (preg_match('/(?:No\s*HP|HP|Telepon|WA):\s*([^#\)]+)/i', $raw, $m)) {
             $val = trim($m[1]);
             if ($val !== '-' && !empty($val)) $data['no_hp'] = $val;
         }

@@ -40,7 +40,8 @@
             </div>
 
             <h2 class="text-2xl md:text-3xl font-extrabold font-mono text-white tracking-tight"><?= htmlspecialchars($perkara->nomor_perkara) ?></h2>
-            <p class="text-xs text-slate-400 mt-1">Majelis Hakim: <strong class="text-slate-200"><?= htmlspecialchars($perkara->majelis_hakim ?? $perkara->nama_hakim ?? '—') ?></strong></p>
+            <?php $clean_hakim = str_replace(['</br>', '<br>', '<br/>', '<br />'], '; ', $perkara->majelis_hakim ?? $perkara->nama_hakim ?? '—'); ?>
+            <p class="text-xs text-slate-400 mt-1">Majelis Hakim: <strong class="text-slate-200"><?= htmlspecialchars($clean_hakim) ?></strong></p>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-slate-800 text-xs">
                 <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
@@ -72,18 +73,41 @@
                     if (!empty($list)):
                     ?>
                     <div class="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2"><?= $label ?></span>
-                        <ul class="space-y-2">
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-3"><?= $label ?></span>
+                        <div class="space-y-3">
                             <?php foreach ($list as $p): ?>
-                            <li class="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                                <span class="w-2 h-2 rounded-full <?= $k === 'penggugat' ? 'bg-blue-600' : ($k === 'tergugat' ? 'bg-amber-500' : 'bg-purple-500') ?>"></span>
-                                <span><?= htmlspecialchars($p->nama) ?></span>
-                                <?php if ($p->kuasa_hukum): ?>
-                                <span class="text-xs font-normal text-slate-500">(Kuasa: <?= htmlspecialchars($p->kuasa_hukum) ?>)</span>
+                            <div class="p-3 bg-slate-50/80 rounded-xl border border-slate-200/80">
+                                <div class="flex items-center gap-2 text-sm font-bold text-slate-900">
+                                    <span class="w-2.5 h-2.5 rounded-full shrink-0 <?= $k === 'penggugat' ? 'bg-blue-600' : ($k === 'tergugat' ? 'bg-amber-500' : 'bg-purple-500') ?>"></span>
+                                    <span class="leading-tight"><?= htmlspecialchars($p->nama) ?></span>
+                                </div>
+                                <?php if (!empty($p->kuasa_details)): ?>
+                                <div class="mt-2.5 pt-2 border-t border-slate-200/70 text-xs">
+                                    <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wide block mb-1.5 flex items-center gap-1">
+                                        ⚖️ Kuasa Hukum:
+                                    </span>
+                                    <div class="space-y-1 pl-1">
+                                        <?php foreach ($p->kuasa_details as $k_item): ?>
+                                        <div class="flex items-start gap-1.5 text-slate-700 font-medium">
+                                            <span class="text-slate-400 font-bold">•</span>
+                                            <span class="leading-snug"><?= htmlspecialchars($k_item->nama) ?></span>
+                                        </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                                <?php elseif (!empty($p->kuasa_hukum)): ?>
+                                <div class="mt-2.5 pt-2 border-t border-slate-200/70 text-xs">
+                                    <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wide block mb-1.5 flex items-center gap-1">
+                                        ⚖️ Kuasa Hukum:
+                                    </span>
+                                    <div class="pl-1 text-slate-700 font-medium leading-snug">
+                                        <?= htmlspecialchars($p->kuasa_hukum) ?>
+                                    </div>
+                                </div>
                                 <?php endif; ?>
-                            </li>
+                            </div>
                             <?php endforeach; ?>
-                        </ul>
+                        </div>
                     </div>
                     <?php endif; ?>
                 <?php endforeach; ?>
