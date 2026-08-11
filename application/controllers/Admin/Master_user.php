@@ -59,6 +59,8 @@ class Master_user extends MY_Controller {
                     'username'  => $username,
                     'password'  => password_hash($this->input->post('password'), PASSWORD_BCRYPT),
                     'role'      => $role_str,
+                    'id_sipp'   => $this->input->post('id_sipp', true) ?: null,
+                    'nip'       => $this->input->post('nip', true) ?: null,
                     'is_active' => $this->input->post('is_active') ? 1 : 0,
                 ]);
 
@@ -103,6 +105,8 @@ class Master_user extends MY_Controller {
                     'nama'      => $this->input->post('nama', true),
                     'username'  => $username,
                     'role'      => $role_str,
+                    'id_sipp'   => $this->input->post('id_sipp', true) ?: null,
+                    'nip'       => $this->input->post('nip', true) ?: null,
                     'is_active' => $this->input->post('is_active') ? 1 : 0,
                 ];
 

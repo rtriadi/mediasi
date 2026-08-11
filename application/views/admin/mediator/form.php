@@ -31,13 +31,23 @@
                 </select>
             </div>
 
-            <!-- No. Sertifikat -->
-            <div class="mb-5">
-                <label for="no_sertifikat" class="block text-sm font-medium text-gray-700 mb-1.5">No. Sertifikat Mediator</label>
-                <input type="text" id="no_sertifikat" name="no_sertifikat"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
-                    value="<?= htmlspecialchars($mediator_data->no_sertifikat ?? set_value('no_sertifikat')) ?>"
-                    placeholder="Contoh: 123/SERT-MED/MA/2022">
+            <!-- No. Sertifikat & ID SIPP -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+                <div>
+                    <label for="no_sertifikat" class="block text-sm font-medium text-gray-700 mb-1.5">No. Sertifikat Mediator</label>
+                    <input type="text" id="no_sertifikat" name="no_sertifikat"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-gray-900"
+                        value="<?= htmlspecialchars($mediator_data->no_sertifikat ?? set_value('no_sertifikat')) ?>"
+                        placeholder="Contoh: 123/SERT-MED/MA/2022">
+                </div>
+                <div>
+                    <label for="id_sipp" class="block text-sm font-medium text-gray-700 mb-1.5">ID SIPP</label>
+                    <input type="text" id="id_sipp" name="id_sipp"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-gray-900"
+                        value="<?= htmlspecialchars($mediator_data->id_sipp ?? set_value('id_sipp')) ?>"
+                        placeholder="Contoh: 38">
+                    <p class="text-xs text-gray-400 mt-1">ID Hakim pada SIPP</p>
+                </div>
             </div>
 
             <!-- Kontak: Email & No HP -->

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Badge helper
 function role_badge($role) {
     $map = [
@@ -65,7 +65,8 @@ function role_badge($role) {
                 <tr>
                     <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider w-8">#</th>
                     <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">Nama Lengkap</th>
-                    <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">Username</th>
+                    <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">Username / NIP</th>
+                    <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">ID SIPP</th>
                     <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">Role</th>
                     <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">Status</th>
                     <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">Dibuat</th>
@@ -74,13 +75,20 @@ function role_badge($role) {
             </thead>
             <tbody class="divide-y divide-slate-100">
                 <?php if (empty($users)): ?>
-                <tr><td colspan="7" class="px-4 py-12 text-center text-slate-400 font-medium">Tidak ada data user ditemukan.</td></tr>
+                <tr><td colspan="8" class="px-4 py-12 text-center text-slate-400 font-medium">Tidak ada data user ditemukan.</td></tr>
                 <?php else: ?>
                 <?php $no = (isset($page) ? ($page-1)*10 : 0) + 1; foreach ($users as $u): ?>
                 <tr class="hover:bg-slate-50/80 transition-colors">
                     <td class="px-4 py-3.5 text-slate-400"><?= $no++ ?></td>
                     <td class="px-4 py-3.5 font-semibold text-slate-900"><?= htmlspecialchars($u->nama) ?></td>
                     <td class="px-4 py-3.5 text-slate-600 font-mono text-xs">@<?= htmlspecialchars($u->username) ?></td>
+                    <td class="px-4 py-3.5 font-mono text-xs">
+                        <?php if (!empty($u->id_sipp)): ?>
+                            <span class="inline-flex items-center px-2 py-0.5 bg-indigo-50 text-indigo-700 font-bold border border-indigo-200 rounded-md">ID: <?= htmlspecialchars($u->id_sipp) ?></span>
+                        <?php else: ?>
+                            <span class="text-slate-300">-</span>
+                        <?php endif; ?>
+                    </td>
                     <td class="px-4 py-3.5"><?= role_badge($u->role) ?></td>
                     <td class="px-4 py-3.5">
                         <?php if ($u->is_active): ?>

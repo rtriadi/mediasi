@@ -1,4 +1,4 @@
-﻿<!-- Header -->
+<!-- Header -->
 <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
     <div>
         <h2 class="text-2xl font-extrabold font-heading text-slate-900 tracking-tight">Kelola Mediator</h2>
@@ -51,6 +51,7 @@
                     <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">Nama Mediator</th>
                     <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">Jenis</th>
                     <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">No. Sertifikat</th>
+                    <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">ID SIPP</th>
                     <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">Email / HP</th>
                     <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">Akun User</th>
                     <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">Status</th>
@@ -59,7 +60,7 @@
             </thead>
             <tbody class="divide-y divide-slate-100">
                 <?php if (empty($mediators)): ?>
-                <tr><td colspan="8" class="px-4 py-12 text-center text-slate-400 font-medium">Tidak ada data mediator ditemukan.</td></tr>
+                <tr><td colspan="9" class="px-4 py-12 text-center text-slate-400 font-medium">Tidak ada data mediator ditemukan.</td></tr>
                 <?php else: ?>
                 <?php $no = (isset($page) ? ($page-1)*10 : 0) + 1; foreach ($mediators as $m): ?>
                 <tr class="hover:bg-slate-50/80 transition-colors">
@@ -77,6 +78,13 @@
                         <?php endif; ?>
                     </td>
                     <td class="px-4 py-3.5 text-slate-600 font-mono"><?= htmlspecialchars($m->no_sertifikat ?: '—') ?></td>
+                    <td class="px-4 py-3.5 font-mono text-xs">
+                        <?php if (!empty($m->id_sipp)): ?>
+                            <span class="inline-flex items-center px-2 py-0.5 bg-indigo-50 text-indigo-700 font-bold border border-indigo-200 rounded-md">ID: <?= htmlspecialchars($m->id_sipp) ?></span>
+                        <?php else: ?>
+                            <span class="text-slate-300">-</span>
+                        <?php endif; ?>
+                    </td>
                     <td class="px-4 py-3.5">
                         <?php if (!empty($m->email) || !empty($m->no_hp)): ?>
                         <div class="flex flex-col gap-0.5">

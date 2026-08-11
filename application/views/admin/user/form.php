@@ -30,6 +30,26 @@
                 <p class="text-xs text-gray-400 mt-1">Hanya boleh huruf, angka, dan underscore (_)</p>
             </div>
 
+            <!-- ID SIPP & NIP -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+                <div>
+                    <label for="id_sipp" class="block text-sm font-medium text-gray-700 mb-1.5">ID SIPP</label>
+                    <input type="text" id="id_sipp" name="id_sipp"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-gray-900"
+                        value="<?= htmlspecialchars($user_data->id_sipp ?? set_value('id_sipp')) ?>"
+                        placeholder="Contoh: 38">
+                    <p class="text-xs text-gray-400 mt-1">ID Pegawai pada Database SIPP</p>
+                </div>
+                <div>
+                    <label for="nip" class="block text-sm font-medium text-gray-700 mb-1.5">NIP</label>
+                    <input type="text" id="nip" name="nip"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-gray-900"
+                        value="<?= htmlspecialchars($user_data->nip ?? set_value('nip')) ?>"
+                        placeholder="Contoh: 196610121992032002">
+                    <p class="text-xs text-gray-400 mt-1">Nomor Induk Pegawai</p>
+                </div>
+            </div>
+
             <!-- Password -->
             <div class="mb-5">
                 <label for="password" class="block text-sm font-medium text-gray-700 mb-1.5">
