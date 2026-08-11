@@ -46,8 +46,8 @@ ALTER TABLE perkara
   ADD COLUMN tgl_penetapan_mediator DATE NULL AFTER tgl_batas_mediasi;
 
 INSERT IGNORE INTO settings (setting_key, setting_value) VALUES 
-('api_mediasi_url', 'http://127.0.0.1/api_sipp_mediasi.json'),
-('api_mediasi_token', ''),
+('api_mediasi_url', 'http://192.168.100.5/perkara360/api/mediasi'),
+('api_mediasi_key', ''),
 ('api_sync_auto', '1'),
 ('batas_waktu_mediasi_hari', '30'),
 ('api_last_sync', '');
