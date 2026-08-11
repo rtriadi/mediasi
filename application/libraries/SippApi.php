@@ -171,13 +171,17 @@ class SippApi {
                     'nomor_perkara'              => $nomor_perkara,
                     'perkara_id_sipp'            => isset($item['perkara_id']) ? $item['perkara_id'] : null,
                     'jenis_perkara_id'           => $jenis_perkara_id,
+                    'jenis_perkara'              => $jenis_nama,
                     'nama_hakim'                 => !empty($clean_hakim) ? $clean_hakim : 'Majelis Hakim',
                     'majelis_hakim'              => $majelis_raw,
                     'majelis_id'                 => isset($item['majelis_id']) ? $item['majelis_id'] : null,
+                    'panitera_pengganti_id'      => isset($item['panitera_pengganti_id']) ? $item['panitera_pengganti_id'] : null,
                     'panitera_pengganti_id_sipp' => isset($item['panitera_pengganti_id']) ? $item['panitera_pengganti_id'] : null,
                     'panitera_sidang'            => isset($item['panitera_sidang']) ? $item['panitera_sidang'] : null,
                     'tgl_penetapan_mediator'     => $tgl_penetapan,
+                    'tanggal_penetapan_mediator' => $tgl_penetapan,
                     'tgl_batas_mediasi'          => $tgl_batas,
+                    'status_mediator'            => isset($item['status_mediator']) ? $item['status_mediator'] : null,
                     'pp_id'                      => $pp_id,
                 ];
 

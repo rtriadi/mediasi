@@ -458,6 +458,23 @@ $wa_active    = get_app_setting('wa_notif_active', '0') === '1';
 
 </div>
 
+<!-- Fullscreen Sync Loader Modal -->
+<div id="sync-loader-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden transition-all">
+    <div class="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center border border-slate-100 flex flex-col items-center animate-in fade-in zoom-in duration-200">
+        <div class="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mb-4 relative">
+            <i class="fa-solid fa-cloud-arrow-down text-2xl text-indigo-600 animate-bounce"></i>
+            <div class="absolute -top-1 -right-1 w-4 h-4 bg-indigo-600 rounded-full animate-ping"></div>
+        </div>
+        <h3 class="text-base font-extrabold text-slate-900 font-heading">Memproses Sinkronisasi API...</h3>
+        <p class="text-xs text-slate-500 mt-1 mb-4">Sedang mengimpor & memperbarui data perkara dari SIPP ke mediasi_db.</p>
+        
+        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden mb-2">
+            <div class="bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-600 h-full w-full animate-pulse"></div>
+        </div>
+        <span class="text-[11px] text-indigo-600 font-bold font-mono">Mohon tunggu sebentar...</span>
+    </div>
+</div>
+
 <script>
 function updateCronHelper(val) {
     const min = Math.max(1, parseInt(val) || 15);
@@ -470,6 +487,7 @@ function testApiConnection() {
     const icon = document.getElementById('icon-test-api');
     const text = document.getElementById('text-test-api');
     const resBox = document.getElementById('test-api-result');
+    const loaderModal = document.getElementById('sync-loader-modal');
     const urlVal = document.getElementById('api_mediasi_url').value;
     const keyVal = document.getElementById('api_mediasi_key').value;
 
@@ -482,6 +500,9 @@ function testApiConnection() {
     btn.classList.add('opacity-75', 'cursor-not-allowed');
     icon.className = 'fa-solid fa-rotate fa-spin text-indigo-600';
     text.innerText = 'Memproses Sync...';
+
+    // Tampilkan Loader Modal Fullscreen
+    if (loaderModal) loaderModal.classList.remove('hidden');
 
     resBox.classList.add('hidden');
     resBox.className = 'p-3.5 rounded-xl text-xs border font-medium hidden';
@@ -499,6 +520,9 @@ function testApiConnection() {
     })
     .then(res => res.json())
     .then(data => {
+        // Sembunyikan Loader Modal Fullscreen
+        if (loaderModal) loaderModal.classList.add('hidden');
+
         btn.disabled = false;
         btn.classList.remove('opacity-75', 'cursor-not-allowed');
         icon.className = 'fa-solid fa-rotate text-indigo-600';
@@ -514,6 +538,9 @@ function testApiConnection() {
         }
     })
     .catch(err => {
+        // Sembunyikan Loader Modal Fullscreen
+        if (loaderModal) loaderModal.classList.add('hidden');
+
         btn.disabled = false;
         btn.classList.remove('opacity-75', 'cursor-not-allowed');
         icon.className = 'fa-solid fa-rotate text-indigo-600';

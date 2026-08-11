@@ -135,16 +135,36 @@
 	<?php endif; ?>
 </div>
 
+<!-- Fullscreen Sync Loader Modal PP -->
+<div id="pp-sync-loader-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden transition-all">
+    <div class="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center border border-slate-100 flex flex-col items-center animate-in fade-in zoom-in duration-200">
+        <div class="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mb-4 relative">
+            <i class="fa-solid fa-cloud-arrow-down text-2xl text-indigo-600 animate-bounce"></i>
+            <div class="absolute -top-1 -right-1 w-4 h-4 bg-indigo-600 rounded-full animate-ping"></div>
+        </div>
+        <h3 class="text-base font-extrabold text-slate-900 font-heading">Menarik Data SIPP API...</h3>
+        <p class="text-xs text-slate-500 mt-1 mb-4">Sedang mengimpor data perkara baru ke database mediasi_db.</p>
+        
+        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden mb-2">
+            <div class="bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-600 h-full w-full animate-pulse"></div>
+        </div>
+        <span class="text-[11px] text-indigo-600 font-bold font-mono">Mohon tunggu sebentar...</span>
+    </div>
+</div>
+
 <script>
 function triggerSippApiSync() {
 	const btn = document.getElementById('btn-sync-api');
 	const icon = document.getElementById('icon-sync-api');
 	const text = document.getElementById('text-sync-api');
+	const loaderModal = document.getElementById('pp-sync-loader-modal');
 
 	btn.disabled = true;
 	btn.classList.add('opacity-75', 'cursor-not-allowed');
 	icon.classList.add('fa-spin');
 	text.innerText = 'Menarik Data API...';
+
+	if (loaderModal) loaderModal.classList.remove('hidden');
 
 	fetch('<?= site_url("pp/api_sync/run") ?>', {
 		method: 'GET',
@@ -154,6 +174,8 @@ function triggerSippApiSync() {
 	})
 	.then(res => res.json())
 	.then(data => {
+		if (loaderModal) loaderModal.classList.add('hidden');
+
 		btn.disabled = false;
 		btn.classList.remove('opacity-75', 'cursor-not-allowed');
 		icon.classList.remove('fa-spin');
@@ -167,6 +189,8 @@ function triggerSippApiSync() {
 		}
 	})
 	.catch(err => {
+		if (loaderModal) loaderModal.classList.add('hidden');
+
 		btn.disabled = false;
 		btn.classList.remove('opacity-75', 'cursor-not-allowed');
 		icon.classList.remove('fa-spin');
