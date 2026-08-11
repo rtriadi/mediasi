@@ -41,12 +41,12 @@
                         placeholder="Contoh: 123/SERT-MED/MA/2022">
                 </div>
                 <div>
-                    <label for="id_sipp" class="block text-sm font-medium text-gray-700 mb-1.5">ID SIPP</label>
+                    <label for="id_sipp" class="block text-sm font-medium text-gray-700 mb-1.5">ID Mediator (SIPP)</label>
                     <input type="text" id="id_sipp" name="id_sipp"
                         class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-gray-900"
                         value="<?= htmlspecialchars($mediator_data->id_sipp ?? set_value('id_sipp')) ?>"
-                        placeholder="Contoh: 38">
-                    <p class="text-xs text-gray-400 mt-1">ID Hakim pada SIPP</p>
+                        placeholder="Contoh: 44">
+                    <p class="text-xs text-gray-400 mt-1">ID Mediator pada API SIPP</p>
                 </div>
             </div>
 

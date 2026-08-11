@@ -51,7 +51,7 @@
                     <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">Nama Mediator</th>
                     <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">Jenis</th>
                     <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">No. Sertifikat</th>
-                    <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">ID SIPP</th>
+                    <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">ID Mediator</th>
                     <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">Email / HP</th>
                     <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">Akun User</th>
                     <th class="text-left px-4 py-3.5 font-bold uppercase tracking-wider">Status</th>
