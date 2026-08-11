@@ -99,7 +99,7 @@
                     <td class="px-4 py-3.5 text-slate-400"><?= $no++ ?></td>
                     <td class="px-4 py-3.5 font-bold text-slate-900 font-mono"><?= htmlspecialchars($p->nomor_perkara) ?></td>
                     <td class="px-4 py-3.5 font-medium text-slate-700"><?= htmlspecialchars($p->jenis_perkara) ?></td>
-                    <td class="px-4 py-3.5 text-slate-600"><?= htmlspecialchars($p->nama_hakim) ?></td>
+                    <td class="px-4 py-3.5 text-slate-600"><?= htmlspecialchars($p->majelis_hakim ?? $p->nama_hakim ?? '—') ?></td>
                     <td class="px-4 py-3.5 font-bold text-slate-800"><?= htmlspecialchars($p->nama_mediator ?: '—') ?></td>
                     <td class="px-4 py-3.5 font-mono text-slate-600"><?= date('d/m/Y', strtotime($p->tgl_batas_mediasi)) ?></td>
                     <td class="px-4 py-3.5">
@@ -108,10 +108,12 @@
                         <?php elseif ($p->status === 'proses'): ?>
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-800">Dalam Proses</span>
                         <?php elseif ($p->status === 'selesai'): ?>
-                            <?php if ($p->hasil === 'berhasil'): ?>
-                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">✓ Berhasil</span>
+                            <?php if (in_array($p->hasil, ['berhasil', 'berhasil_seluruhnya'])): ?>
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">✓ Berhasil Seluruhnya</span>
                             <?php elseif ($p->hasil === 'berhasil_sebagian'): ?>
                             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800">~ Berhasil Sebagian</span>
+                            <?php elseif ($p->hasil === 'tidak_dapat_dilaksanakan'): ?>
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-700">⊘ Tidak Dapat Dilaksanakan</span>
                             <?php else: ?>
                             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800">✕ Tidak Berhasil</span>
                             <?php endif; ?>

@@ -38,7 +38,7 @@
                 <td style="text-align: center;"><?= $no++ ?></td>
                 <td><?= htmlspecialchars($p->nomor_perkara) ?></td>
                 <td><?= htmlspecialchars($p->jenis_perkara) ?></td>
-                <td><?= htmlspecialchars($p->nama_hakim) ?></td>
+                <td><?= htmlspecialchars($p->majelis_hakim ?? $p->nama_hakim ?? '—') ?></td>
                 <td><?= htmlspecialchars($p->nama_mediator ?: '—') ?></td>
                 <td><?= date('d/m/Y', strtotime($p->tgl_batas_mediasi)) ?></td>
                 <td>

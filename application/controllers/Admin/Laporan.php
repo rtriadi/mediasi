@@ -26,6 +26,9 @@ class Laporan extends MY_Controller {
         $this->db->where('MONTH(p.created_at)', $bulan);
         $this->db->where('YEAR(p.created_at)', $tahun);
         $perkaras = $this->db->order_by('p.created_at', 'ASC')->get()->result();
+        foreach ($perkaras as &$p) {
+            $p->nama_hakim = $p->majelis_hakim ?? null;
+        }
 
         // Hitung data statistik
         $stat = [
@@ -74,6 +77,9 @@ class Laporan extends MY_Controller {
         $this->db->where('MONTH(p.created_at)', $bulan);
         $this->db->where('YEAR(p.created_at)', $tahun);
         $perkaras = $this->db->order_by('p.created_at', 'ASC')->get()->result();
+        foreach ($perkaras as &$p) {
+            $p->nama_hakim = $p->majelis_hakim ?? null;
+        }
 
         $bln_nama = bulan_indo($bulan);
         $filename = "Laporan_Mediasi_{$bln_nama}_{$tahun}.xls";
@@ -102,6 +108,9 @@ class Laporan extends MY_Controller {
         $this->db->where('MONTH(p.created_at)', $bulan);
         $this->db->where('YEAR(p.created_at)', $tahun);
         $perkaras = $this->db->order_by('p.created_at', 'ASC')->get()->result();
+        foreach ($perkaras as &$p) {
+            $p->nama_hakim = $p->majelis_hakim ?? null;
+        }
 
         $this->load->view('admin/laporan/cetak_pdf', [
             'title'    => "Laporan Bulanan Mediasi — {$bulan}/{$tahun}",
