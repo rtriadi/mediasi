@@ -74,7 +74,15 @@ class M_perkara extends CI_Model {
 
 
     public function get_pihak($perkara_id) {
-        return $this->db->where('perkara_id', $perkara_id)->order_by('jenis, urutan')->get('perkara_pihak')->result();
+        return $this->db->where('perkara_id', $perkara_id)->order_by('jenis_pihak, urutan')->get('perkara_pihak')->result();
+    }
+
+    public function get_kuasa($perkara_id) {
+        $this->db->select('pk.*, pp.nama as nama_pihak, pp.jenis_pihak');
+        $this->db->from('perkara_kuasa pk');
+        $this->db->join('perkara_pihak pp', 'pp.id = pk.pihak_id', 'left');
+        $this->db->where('pk.perkara_id', $perkara_id);
+        return $this->db->get()->result();
     }
 
     public function get_all_by_pp($pp_id, $filter = [], $limit = 10, $offset = 0) {
