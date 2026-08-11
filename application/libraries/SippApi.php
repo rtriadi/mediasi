@@ -91,7 +91,7 @@ class SippApi {
             ];
         }
 
-        $settings = $this->CI->M_pengaturan->get_all_assoc();
+        $settings = $this->CI->M_pengaturan->get_all_as_array();
         $batas_hari = !empty($settings['batas_waktu_mediasi_hari']) ? (int)$settings['batas_waktu_mediasi_hari'] : 30;
 
         $inserted = 0;

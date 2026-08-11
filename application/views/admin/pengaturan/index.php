@@ -240,6 +240,78 @@ $wa_active    = get_app_setting('wa_notif_active', '0') === '1';
                 </div>
             </div>
 
+            <!-- Section SIPP API Integration -->
+            <div class="border-t border-slate-200 pt-6">
+                <div class="border-b border-slate-100 pb-4 mb-4">
+                    <h3 class="text-base font-bold text-slate-900 font-heading flex items-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-down text-indigo-600 text-lg"></i>
+                        <span>Integrasi API SIPP Mediasi</span>
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Konfigurasi endpoint URL API SIPP, API Key (Header X-API-KEY), durasi batas mediasi, dan auto-sync.</p>
+                </div>
+
+                <!-- Status Auto Sync API Toggle -->
+                <div class="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-200/80 mb-5 flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-indigo-950 block">Status Auto-Sync API SIPP</span>
+                        <p class="text-[11px] text-indigo-800 mt-0.5">Aktifkan untuk mengizinkan cronjob latar belakang menarik data baru secara berkala.</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <?php $api_sync_auto = get_app_setting('api_sync_auto', '1') === '1'; ?>
+                        <input type="checkbox" name="api_sync_auto" value="1" class="sr-only peer" <?= $api_sync_auto ? 'checked' : '' ?>>
+                        <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    </label>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- SIPP API Endpoint URL -->
+                    <div>
+                        <label for="api_mediasi_url" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                            API Endpoint URL <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" id="api_mediasi_url" name="api_mediasi_url" required
+                            value="<?= htmlspecialchars(get_app_setting('api_mediasi_url', 'http://192.168.100.5/perkara360/api/mediasi')) ?>"
+                            class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 font-mono text-slate-900"
+                            placeholder="http://192.168.100.5/perkara360/api/mediasi">
+                        <p class="text-[11px] text-slate-400 mt-1">URL Endpoint API SIPP untuk mengambil data mediasi perkara (Format JSON).</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- SIPP API Key (Header X-API-KEY) -->
+                        <div>
+                            <label for="api_mediasi_key" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                                API Key (Header X-API-KEY)
+                            </label>
+                            <input type="text" id="api_mediasi_key" name="api_mediasi_key"
+                                value="<?= htmlspecialchars(get_app_setting('api_mediasi_key', '')) ?>"
+                                class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 font-mono text-slate-900"
+                                placeholder="Kosongkan jika tanpa header API Key">
+                            <p class="text-[11px] text-slate-400 mt-1">Kunci API yang akan dikirim via Header <code class="bg-slate-100 px-1 py-0.5 rounded text-indigo-700 font-mono">X-API-KEY</code>.</p>
+                        </div>
+
+                        <!-- Batas Waktu Mediasi (Hari Kalender) -->
+                        <div>
+                            <label for="batas_waktu_mediasi_hari" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                                Batas Waktu Mediasi (Hari Kalender)
+                            </label>
+                            <input type="number" id="batas_waktu_mediasi_hari" name="batas_waktu_mediasi_hari" min="1" max="180"
+                                value="<?= htmlspecialchars(get_app_setting('batas_waktu_mediasi_hari', '30')) ?>"
+                                class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 font-bold text-slate-900"
+                                placeholder="30">
+                            <p class="text-[11px] text-slate-400 mt-1">Jumlah hari kalender sejak tanggal penetapan mediator (Default: 30 hari).</p>
+                        </div>
+                    </div>
+
+                    <?php $last_sync = get_app_setting('api_last_sync', ''); ?>
+                    <?php if ($last_sync): ?>
+                    <div class="p-3 bg-slate-100 rounded-xl flex items-center justify-between text-xs text-slate-600">
+                        <span><i class="fa-solid fa-clock-rotate-left mr-1.5 text-slate-500"></i>Terakhir Sinkronisasi API:</span>
+                        <strong class="font-mono text-slate-900"><?= date('d-m-Y H:i:s', strtotime($last_sync)) ?> WITA</strong>
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
             <!-- Submit Button -->
             <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
                 <button type="submit" class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold px-6 py-3 rounded-xl text-xs transition-all shadow-md shadow-blue-600/20">
