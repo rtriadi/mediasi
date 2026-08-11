@@ -277,17 +277,29 @@ class SippApi {
         $jenis_mediator  = ($status_mediator === 'H') ? 'hakim' : 'non_hakim';
 
         // Cari atau buat mediator
-        $mediator = $this->CI->db->get_where('mediators', ['nama' => $nama_mediator])->row();
+        $id_mediator_api = isset($item['id_mediator']) ? trim($item['id_mediator']) : null;
+        $mediator = null;
+        if (!empty($id_mediator_api)) {
+            $mediator = $this->CI->db->get_where('mediators', ['id_mediator' => $id_mediator_api])->row();
+        }
+        if (!$mediator) {
+            $mediator = $this->CI->db->get_where('mediators', ['nama' => $nama_mediator])->row();
+        }
+
         if (!$mediator) {
             $this->CI->db->insert('mediators', [
                 'nama'          => $nama_mediator,
                 'jenis'         => $jenis_mediator,
+                'id_mediator'   => $id_mediator_api,
                 'no_sertifikat' => 'SERTIF/API/' . date('Y'),
                 'is_active'     => 1
             ]);
             $mediator_id = $this->CI->db->insert_id();
         } else {
             $mediator_id = $mediator->id;
+            if (!empty($id_mediator_api) && empty($mediator->id_mediator)) {
+                $this->CI->db->where('id', $mediator_id)->update('mediators', ['id_mediator' => $id_mediator_api]);
+            }
         }
 
         // Check penunjukan perkara_mediator

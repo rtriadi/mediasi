@@ -79,8 +79,8 @@
                     </td>
                     <td class="px-4 py-3.5 text-slate-600 font-mono"><?= htmlspecialchars($m->no_sertifikat ?: '—') ?></td>
                     <td class="px-4 py-3.5 font-mono text-xs">
-                        <?php if (!empty($m->id_sipp)): ?>
-                            <span class="inline-flex items-center px-2 py-0.5 bg-indigo-50 text-indigo-700 font-bold border border-indigo-200 rounded-md">ID: <?= htmlspecialchars($m->id_sipp) ?></span>
+                        <?php if (!empty($m->id_mediator)): ?>
+                            <span class="inline-flex items-center px-2 py-0.5 bg-indigo-50 text-indigo-700 font-bold border border-indigo-200 rounded-md">ID: <?= htmlspecialchars($m->id_mediator) ?></span>
                         <?php else: ?>
                             <span class="text-slate-300">-</span>
                         <?php endif; ?>
