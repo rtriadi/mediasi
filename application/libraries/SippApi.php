@@ -21,7 +21,7 @@ class SippApi {
      * Melakukan HTTP request cURL ke API SIPP
      */
     public function fetch_data($params = []) {
-        $settings = $this->CI->M_pengaturan->get_all_assoc();
+        $settings = $this->CI->M_pengaturan->get_all_as_array();
         $api_url = !empty($settings['api_mediasi_url']) ? trim($settings['api_mediasi_url']) : 'http://192.168.100.5/perkara360/api/mediasi';
         $api_key = !empty($settings['api_mediasi_key']) ? trim($settings['api_mediasi_key']) : '';
 

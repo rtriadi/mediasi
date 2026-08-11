@@ -44,6 +44,12 @@ class Pengaturan extends MY_Controller {
         $smtp_crypto        = trim($this->input->post('smtp_crypto', true)) ?: 'tls';
         $mail_from_name     = trim($this->input->post('mail_from_name', true)) ?: $nama_aplikasi;
 
+        // SIPP API Settings
+        $api_mediasi_url          = trim($this->input->post('api_mediasi_url', true)) ?: 'http://192.168.100.5/perkara360/api/mediasi';
+        $api_mediasi_key          = trim($this->input->post('api_mediasi_key', true));
+        $api_sync_auto            = $this->input->post('api_sync_auto') ? '1' : '0';
+        $batas_waktu_mediasi_hari = (int)$this->input->post('batas_waktu_mediasi_hari', true) ?: 30;
+
         $this->M_pengaturan->save('nama_aplikasi', $nama_aplikasi);
         $this->M_pengaturan->save('slogan_aplikasi', $slogan_aplikasi);
         $this->M_pengaturan->save('nama_satker', $nama_satker);
@@ -59,6 +65,11 @@ class Pengaturan extends MY_Controller {
         $this->M_pengaturan->save('smtp_pass', $smtp_pass);
         $this->M_pengaturan->save('smtp_crypto', $smtp_crypto);
         $this->M_pengaturan->save('mail_from_name', $mail_from_name);
+
+        $this->M_pengaturan->save('api_mediasi_url', $api_mediasi_url);
+        $this->M_pengaturan->save('api_mediasi_key', $api_mediasi_key);
+        $this->M_pengaturan->save('api_sync_auto', $api_sync_auto);
+        $this->M_pengaturan->save('batas_waktu_mediasi_hari', $batas_waktu_mediasi_hari);
 
         // Upload Logo Aplikasi jika ada
         if (!empty($_FILES['logo_aplikasi']['name'])) {

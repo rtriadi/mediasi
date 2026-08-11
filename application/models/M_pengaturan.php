@@ -26,6 +26,11 @@ class M_pengaturan extends CI_Model {
             'smtp_pass'           => '',
             'smtp_crypto'         => 'tls',
             'mail_from_name'      => 'SIPO-MEDIASI PA Gorontalo',
+            'api_mediasi_url'     => 'http://192.168.100.5/perkara360/api/mediasi',
+            'api_mediasi_key'     => '',
+            'api_sync_auto'       => '1',
+            'batas_waktu_mediasi_hari' => '30',
+            'api_last_sync'       => '',
         ];
         foreach ($rows as $r) {
             $settings[$r->setting_key] = $r->setting_value;
