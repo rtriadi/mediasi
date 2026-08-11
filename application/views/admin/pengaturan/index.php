@@ -272,8 +272,8 @@ $wa_active    = get_app_setting('wa_notif_active', '0') === '1';
                             </label>
                             <button type="button" onclick="testApiConnection()" id="btn-test-api"
                                 class="inline-flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-3 py-1 rounded-lg text-xs transition-colors border border-indigo-200 shadow-sm active:scale-95">
-                                <i class="fa-solid fa-plug-circle-bolt text-indigo-600" id="icon-test-api"></i>
-                                <span id="text-test-api">Tes Koneksi API</span>
+                                <i class="fa-solid fa-rotate text-indigo-600" id="icon-test-api"></i>
+                                <span id="text-test-api">Tes Koneksi & Sync Manual</span>
                             </button>
                         </div>
                         <input type="text" id="api_mediasi_url" name="api_mediasi_url" required
@@ -480,8 +480,8 @@ function testApiConnection() {
 
     btn.disabled = true;
     btn.classList.add('opacity-75', 'cursor-not-allowed');
-    icon.className = 'fa-solid fa-spinner fa-spin text-indigo-600';
-    text.innerText = 'Menguji...';
+    icon.className = 'fa-solid fa-rotate fa-spin text-indigo-600';
+    text.innerText = 'Memproses Sync...';
 
     resBox.classList.add('hidden');
     resBox.className = 'p-3.5 rounded-xl text-xs border font-medium hidden';
@@ -501,27 +501,27 @@ function testApiConnection() {
     .then(data => {
         btn.disabled = false;
         btn.classList.remove('opacity-75', 'cursor-not-allowed');
-        icon.className = 'fa-solid fa-plug-circle-bolt text-indigo-600';
-        text.innerText = 'Tes Koneksi API';
+        icon.className = 'fa-solid fa-rotate text-indigo-600';
+        text.innerText = 'Tes Koneksi & Sync Manual';
 
         resBox.classList.remove('hidden');
         if (data.status === 'success') {
             resBox.className = 'p-3.5 rounded-xl text-xs border font-medium bg-emerald-50 text-emerald-900 border-emerald-200 flex items-start gap-2';
-            resBox.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600 text-sm mt-0.5"></i> <div><strong>Koneksi Berhasil!</strong><br>' + data.message + '</div>';
+            resBox.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600 text-sm mt-0.5"></i> <div><strong>Koneksi & Sync Berhasil!</strong><br>' + data.message + '</div>';
         } else {
             resBox.className = 'p-3.5 rounded-xl text-xs border font-medium bg-rose-50 text-rose-900 border-rose-200 flex items-start gap-2';
-            resBox.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-600 text-sm mt-0.5"></i> <div><strong>Koneksi Gagal:</strong><br>' + (data.message || 'Gagal terhubung ke API SIPP') + '</div>';
+            resBox.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-600 text-sm mt-0.5"></i> <div><strong>Koneksi/Sync Gagal:</strong><br>' + (data.message || 'Gagal terhubung ke API SIPP') + '</div>';
         }
     })
     .catch(err => {
         btn.disabled = false;
         btn.classList.remove('opacity-75', 'cursor-not-allowed');
-        icon.className = 'fa-solid fa-plug-circle-bolt text-indigo-600';
-        text.innerText = 'Tes Koneksi API';
+        icon.className = 'fa-solid fa-rotate text-indigo-600';
+        text.innerText = 'Tes Koneksi & Sync Manual';
 
         resBox.classList.remove('hidden');
         resBox.className = 'p-3.5 rounded-xl text-xs border font-medium bg-rose-50 text-rose-900 border-rose-200 flex items-start gap-2';
-        resBox.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-600 text-sm mt-0.5"></i> <div><strong>Koneksi Gagal:</strong><br>Terjadi kesalahan sistem saat menghubungi server local API.</div>';
+        resBox.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-600 text-sm mt-0.5"></i> <div><strong>Koneksi Gagal:</strong><br>Terjadi kesalahan sistem saat menghubungi endpoint API.</div>';
         console.error(err);
     });
 }

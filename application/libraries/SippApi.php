@@ -104,8 +104,8 @@ class SippApi {
     /**
      * Memproses sinkronisasi data dari API SIPP ke mediasi_db
      */
-    public function sync($params = []) {
-        $api_res = $this->fetch_data($params);
+    public function sync($params = [], $override_url = null, $override_key = null) {
+        $api_res = $this->fetch_data($params, $override_url, $override_key);
 
         if (isset($api_res['status']) && $api_res['status'] === 'error') {
             return $api_res;
