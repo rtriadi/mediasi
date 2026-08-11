@@ -367,8 +367,6 @@ $wa_active    = get_app_setting('wa_notif_active', '0') === '1';
                     </div>
                     <?php endif; ?>
                 </div>
-                    <?php endif; ?>
-                </div>
             </div>
 
             <!-- Submit Button -->
