@@ -136,7 +136,7 @@
 </div>
 
 <!-- Fullscreen Sync Loader Modal PP -->
-<div id="pp-sync-loader-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden transition-all">
+<div id="pp-sync-loader-modal" style="z-index: 999999 !important;" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md flex items-center justify-center hidden transition-all">
     <div class="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center border border-slate-100 flex flex-col items-center animate-in fade-in zoom-in duration-200">
         <div class="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mb-4 relative">
             <i class="fa-solid fa-cloud-arrow-down text-2xl text-indigo-600 animate-bounce"></i>

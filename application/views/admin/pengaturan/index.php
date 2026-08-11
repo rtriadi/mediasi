@@ -270,7 +270,7 @@ $wa_active    = get_app_setting('wa_notif_active', '0') === '1';
                             <label for="api_mediasi_url" class="block text-xs font-bold uppercase tracking-wider text-slate-700">
                                 API Endpoint URL <span class="text-rose-500">*</span>
                             </label>
-                            <button type="button" onclick="testApiConnection()" id="btn-test-api"
+                            <button type="button" onclick="testApiConnection(event)" id="btn-test-api"
                                 class="inline-flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-3 py-1 rounded-lg text-xs transition-colors border border-indigo-200 shadow-sm active:scale-95">
                                 <i class="fa-solid fa-rotate text-indigo-600" id="icon-test-api"></i>
                                 <span id="text-test-api">Tes Koneksi & Sync Manual</span>
@@ -459,7 +459,7 @@ $wa_active    = get_app_setting('wa_notif_active', '0') === '1';
 </div>
 
 <!-- Fullscreen Sync Loader Modal -->
-<div id="sync-loader-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden transition-all">
+<div id="sync-loader-modal" style="z-index: 999999 !important;" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md flex items-center justify-center hidden transition-all">
     <div class="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center border border-slate-100 flex flex-col items-center animate-in fade-in zoom-in duration-200">
         <div class="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mb-4 relative">
             <i class="fa-solid fa-cloud-arrow-down text-2xl text-indigo-600 animate-bounce"></i>
@@ -482,7 +482,12 @@ function updateCronHelper(val) {
     document.getElementById('crontab-string').innerText = '*/' + min + ' * * * * php <?= FCPATH ?>cronjob_api_sync.php';
 }
 
-function testApiConnection() {
+function testApiConnection(e) {
+    if (e && e.preventDefault) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
     const btn = document.getElementById('btn-test-api');
     const icon = document.getElementById('icon-test-api');
     const text = document.getElementById('text-test-api');
@@ -493,7 +498,7 @@ function testApiConnection() {
 
     if (!urlVal) {
         alert('Harap isi API Endpoint URL terlebih dahulu.');
-        return;
+        return false;
     }
 
     btn.disabled = true;
@@ -520,7 +525,6 @@ function testApiConnection() {
     })
     .then(res => res.json())
     .then(data => {
-        // Sembunyikan Loader Modal Fullscreen
         if (loaderModal) loaderModal.classList.add('hidden');
 
         btn.disabled = false;
@@ -536,9 +540,9 @@ function testApiConnection() {
             resBox.className = 'p-3.5 rounded-xl text-xs border font-medium bg-rose-50 text-rose-900 border-rose-200 flex items-start gap-2';
             resBox.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-600 text-sm mt-0.5"></i> <div><strong>Koneksi/Sync Gagal:</strong><br>' + (data.message || 'Gagal terhubung ke API SIPP') + '</div>';
         }
+        resBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     })
     .catch(err => {
-        // Sembunyikan Loader Modal Fullscreen
         if (loaderModal) loaderModal.classList.add('hidden');
 
         btn.disabled = false;
@@ -549,7 +553,10 @@ function testApiConnection() {
         resBox.classList.remove('hidden');
         resBox.className = 'p-3.5 rounded-xl text-xs border font-medium bg-rose-50 text-rose-900 border-rose-200 flex items-start gap-2';
         resBox.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-600 text-sm mt-0.5"></i> <div><strong>Koneksi Gagal:</strong><br>Terjadi kesalahan sistem saat menghubungi endpoint API.</div>';
+        resBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         console.error(err);
     });
+
+    return false;
 }
 </script>
