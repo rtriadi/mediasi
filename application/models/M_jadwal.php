@@ -100,12 +100,17 @@ class M_jadwal extends CI_Model {
      * Ambil data kehadiran pihak untuk suatu sesi.
      */
     public function get_kehadiran($sesi_id) {
-        $this->db->select('sk.*, pp.nama as nama_pihak, pp.jenis as jenis_pihak, pp.kuasa_hukum');
+        $this->db->select('sk.*, pp.nama as nama_pihak, pp.jenis_pihak, pk.nama as nama_kuasa');
         $this->db->from('sesi_kehadiran sk');
-        $this->db->join('perkara_pihak pp', 'pp.id = sk.pihak_id');
+        $this->db->join('perkara_pihak pp', 'pp.id = sk.pihak_id', 'left');
+        $this->db->join('perkara_kuasa pk', 'pk.id = sk.kuasa_id', 'left');
         $this->db->where('sk.sesi_id', $sesi_id);
-        $this->db->order_by('pp.jenis, pp.urutan');
-        return $this->db->get()->result();
+        $this->db->order_by('pp.jenis_pihak, pp.urutan');
+        $res = $this->db->get()->result();
+        foreach ($res as &$r) {
+            $r->jenis = $r->jenis_pihak;
+        }
+        return $res;
     }
 
     /**

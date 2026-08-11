@@ -26,7 +26,7 @@ if (!empty($jadwal)) {
             <div>
                 <span class="text-xs text-blue-600 font-semibold tracking-wider uppercase"><?= htmlspecialchars($perkara->jenis_perkara) ?></span>
                 <h2 class="text-2xl font-bold text-gray-900 font-mono mt-1"><?= htmlspecialchars($perkara->nomor_perkara) ?></h2>
-                <p class="text-sm text-gray-500 mt-1">Majelis Hakim: <strong><?= htmlspecialchars($perkara->nama_hakim) ?></strong> · PP: <?= htmlspecialchars($perkara->nama_pp) ?></p>
+                <p class="text-sm text-gray-500 mt-1">Majelis Hakim: <strong><?= htmlspecialchars($perkara->majelis_hakim ?? $perkara->nama_hakim ?? '—') ?></strong> · PP: <?= htmlspecialchars($perkara->nama_pp ?? '—') ?></p>
             </div>
             <div class="flex items-center gap-3">
                 <a href="<?= site_url("pp/monitor/cetak_resume/{$perkara->id}") ?>" target="_blank"

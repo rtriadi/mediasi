@@ -68,7 +68,22 @@ class M_perkara extends CI_Model {
 
 
     public function get_pihak($perkara_id) {
-        return $this->db->where('perkara_id', $perkara_id)->order_by('jenis_pihak, urutan')->get('perkara_pihak')->result();
+        $pihak_list = $this->db->where('perkara_id', $perkara_id)->order_by('jenis_pihak, urutan')->get('perkara_pihak')->result();
+        $kuasa_list = $this->get_kuasa($perkara_id);
+
+        foreach ($pihak_list as &$p) {
+            $p->jenis = $p->jenis_pihak;
+            $matched_kuasa = [];
+            foreach ($kuasa_list as $k) {
+                if ($k->pihak_id == $p->id || (empty($k->pihak_id) && $p->jenis_pihak === 'penggugat')) {
+                    $matched_kuasa[] = $k->nama;
+                }
+            }
+            $p->kuasa_list  = $matched_kuasa;
+            $p->kuasa_hukum = !empty($matched_kuasa) ? implode(', ', $matched_kuasa) : null;
+        }
+
+        return $pihak_list;
     }
 
     public function get_kuasa($perkara_id) {
@@ -80,7 +95,7 @@ class M_perkara extends CI_Model {
     }
 
     public function get_all_by_pp($pp_id, $filter = [], $limit = 10, $offset = 0) {
-        $this->db->select('p.*, jp.nama as jenis_perkara, m.nama as nama_mediator, h.status_hasil');
+        $this->db->select('p.*, p.majelis_hakim as nama_hakim, jp.nama as jenis_perkara, m.nama as nama_mediator, h.status_hasil');
         $this->db->from('perkara p');
         $this->db->join('jenis_perkara jp', 'jp.id = p.jenis_perkara_id', 'left');
         $this->db->join('perkara_mediator pm', 'pm.perkara_id = p.id AND pm.is_active = 1', 'left');
@@ -89,7 +104,11 @@ class M_perkara extends CI_Model {
         $this->db->where('p.pp_id', $pp_id);
         if (!empty($filter['status'])) $this->db->where('p.status', $filter['status']);
         if (!empty($filter['search'])) $this->db->like('p.nomor_perkara', $filter['search']);
-        return $this->db->limit($limit, $offset)->order_by('p.created_at', 'DESC')->get()->result();
+        $rows = $this->db->limit($limit, $offset)->order_by('p.created_at', 'DESC')->get()->result();
+        foreach ($rows as &$r) {
+            $r->nama_hakim = $r->majelis_hakim ?? null;
+        }
+        return $rows;
     }
 
     public function count_by_pp($pp_id, $filter = []) {
@@ -100,18 +119,22 @@ class M_perkara extends CI_Model {
     }
 
     public function get_by_id($id) {
-        $this->db->select('p.*, jp.nama as jenis_perkara, m.nama as nama_mediator, m.jenis as jenis_mediator, m.id as mediator_id, u.nama as nama_pp');
+        $this->db->select('p.*, p.majelis_hakim as nama_hakim, jp.nama as jenis_perkara, m.nama as nama_mediator, m.jenis as jenis_mediator, m.id as mediator_id, u.nama as nama_pp');
         $this->db->from('perkara p');
         $this->db->join('jenis_perkara jp', 'jp.id = p.jenis_perkara_id', 'left');
         $this->db->join('perkara_mediator pm', 'pm.perkara_id = p.id', 'left');
         $this->db->join('mediators m', 'm.id = pm.mediator_id', 'left');
         $this->db->join('users u', 'u.id = p.pp_id', 'left');
         $this->db->where('p.id', $id);
-        return $this->db->get()->row();
+        $row = $this->db->get()->row();
+        if ($row) {
+            $row->nama_hakim = $row->majelis_hakim ?? null;
+        }
+        return $row;
     }
 
     public function get_all($filter = [], $limit = 10, $offset = 0) {
-        $this->db->select('p.*, jp.nama as jenis_perkara, m.nama as nama_mediator, h.status_hasil, u.nama as nama_pp');
+        $this->db->select('p.*, p.majelis_hakim as nama_hakim, jp.nama as jenis_perkara, m.nama as nama_mediator, h.status_hasil, u.nama as nama_pp');
         $this->db->from('perkara p');
         $this->db->join('jenis_perkara jp', 'jp.id = p.jenis_perkara_id', 'left');
         $this->db->join('perkara_mediator pm', 'pm.perkara_id = p.id AND pm.is_active = 1', 'left');
@@ -125,7 +148,11 @@ class M_perkara extends CI_Model {
             $id_sipp = $this->db->escape_str($filter['hakim_id_sipp']);
             $this->db->where("FIND_IN_SET('{$id_sipp}', p.majelis_id) > 0");
         }
-        return $this->db->limit($limit, $offset)->order_by('p.created_at', 'DESC')->get()->result();
+        $rows = $this->db->limit($limit, $offset)->order_by('p.created_at', 'DESC')->get()->result();
+        foreach ($rows as &$r) {
+            $r->nama_hakim = $r->majelis_hakim ?? null;
+        }
+        return $rows;
     }
 
     public function count_all($filter = []) {
@@ -142,7 +169,7 @@ class M_perkara extends CI_Model {
     }
 
     public function get_by_mediator($mediator_id, $filter = [], $limit = 10, $offset = 0) {
-        $this->db->select('p.*, jp.nama as jenis_perkara, h.status_hasil');
+        $this->db->select('p.*, p.majelis_hakim as nama_hakim, jp.nama as jenis_perkara, h.status_hasil');
         $this->db->from('perkara p');
         $this->db->join('jenis_perkara jp', 'jp.id = p.jenis_perkara_id', 'left');
         $this->db->join('perkara_mediator pm', 'pm.perkara_id = p.id AND pm.is_active = 1');
@@ -150,7 +177,11 @@ class M_perkara extends CI_Model {
         $this->db->where('pm.mediator_id', $mediator_id);
         if (!empty($filter['status'])) $this->db->where('p.status', $filter['status']);
         if (!empty($filter['search'])) $this->db->like('p.nomor_perkara', $filter['search']);
-        return $this->db->limit($limit, $offset)->order_by('p.created_at', 'DESC')->get()->result();
+        $rows = $this->db->limit($limit, $offset)->order_by('p.created_at', 'DESC')->get()->result();
+        foreach ($rows as &$r) {
+            $r->nama_hakim = $r->majelis_hakim ?? null;
+        }
+        return $rows;
     }
 
     public function count_by_mediator($mediator_id, $filter = []) {

@@ -40,7 +40,7 @@
             </div>
 
             <h2 class="text-2xl md:text-3xl font-extrabold font-mono text-white tracking-tight"><?= htmlspecialchars($perkara->nomor_perkara) ?></h2>
-            <p class="text-xs text-slate-400 mt-1">Majelis Hakim: <strong class="text-slate-200"><?= htmlspecialchars($perkara->nama_hakim) ?></strong></p>
+            <p class="text-xs text-slate-400 mt-1">Majelis Hakim: <strong class="text-slate-200"><?= htmlspecialchars($perkara->majelis_hakim ?? $perkara->nama_hakim ?? '—') ?></strong></p>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-slate-800 text-xs">
                 <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800">

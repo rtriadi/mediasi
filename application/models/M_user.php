@@ -83,7 +83,10 @@ class M_user extends CI_Model
 		$this->db->join('mediators m', 'm.user_id = u.id', 'left');
 		$this->db->where('u.is_active', 1);
 		$this->db->where('m.id IS NULL', null, false);
-		$this->db->where_in('u.role', ['hakim,pimpinan', 'hakim', 'mediator']);
+		$this->db->group_start();
+		$this->db->like('u.role', 'hakim');
+		$this->db->or_like('u.role', 'mediator');
+		$this->db->group_end();
 		return $this->db->get()->result();
 	}
 
